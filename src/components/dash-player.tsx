@@ -629,9 +629,6 @@ export default function DashPlayer({
   }, [currentEpisode, contentType]);
 
   const currentEpData = panelEpisodes.find(ep => ep.episode_number === (selectedEp?.episode ?? currentEpisode));
-  const displayTitle = contentType === 'tv_show' && currentEpData 
-    ? `${title} - ${currentEpData.name}` 
-    : title;
 
   return (
     <div 
@@ -956,8 +953,15 @@ export default function DashPlayer({
           </div>
 
           {/* Center: Title */}
-          <div className="hidden md:flex flex-col items-center gap-1 absolute left-1/2 -translate-x-1/2 pointer-events-none">
-            <span className="text-white font-semibold text-lg tracking-wide drop-shadow-md">{displayTitle}</span>
+          <div className="hidden md:flex flex-col items-center gap-0.5 absolute left-1/2 -translate-x-1/2 pointer-events-none">
+            {contentType === 'tv_show' && currentEpData ? (
+              <>
+                <span className="text-white font-semibold text-lg tracking-wide drop-shadow-md">{currentEpData.name}</span>
+                <span className="text-white/70 font-medium text-xs tracking-wider uppercase drop-shadow-md">{title}</span>
+              </>
+            ) : (
+              <span className="text-white font-semibold text-lg tracking-wide drop-shadow-md">{title}</span>
+            )}
           </div>
 
           {/* Right: Settings, Fullscreen */}
