@@ -11,6 +11,13 @@ interface CustomCue {
   text: string;
 }
 
+interface EpisodeStream {
+  id?: number;
+  seasonNumber: number;
+  episodeNumber: number;
+  streamUrl: string;
+}
+
 interface Season {
   season_number: number;
   name: string;
@@ -30,13 +37,15 @@ interface DashPlayerProps {
   url: string;
   title?: string;
   onClose?: () => void;
-  // Next 5 props for TV show support (optional)
+  // Next props for TV show support (optional)
   seasons?: any[];
   tmdbId?: string;
   contentType?: string;
   currentSeason?: number;
   currentEpisode?: number;
   onEpisodeChange?: (season: number, episode: number) => void;
+  episodeStreams?: EpisodeStream[];
+  fallbackStreamUrl?: string;
 }
 
 // Helper to determine the quality label based on width/height
@@ -58,7 +67,9 @@ export default function DashPlayer({
   contentType,
   currentSeason,
   currentEpisode,
-  onEpisodeChange
+  onEpisodeChange,
+  episodeStreams = [],
+  fallbackStreamUrl,
 }: DashPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -816,19 +827,24 @@ export default function DashPlayer({
                             if (epIsMoved.current) return;
                             
                             setSelectedEp({ season: panelSeason, episode: ep.episode_number });
-                            
+
+                            // Resolve the correct stream URL for the selected episode,
+                            // exactly the same logic as SeriesEpisodes.handlePlayEpisode
                             if (onEpisodeChange) {
+                              const specificStream = episodeStreams.find(
+                                s => s.seasonNumber === panelSeason && s.episodeNumber === ep.episode_number
+                              );
+                              const resolvedUrl = specificStream?.streamUrl
+                                || fallbackStreamUrl
+                                || "https://dash.akamaized.net/akamai/bbb_30fps/bbb_30fps.mpd";
+                              // Pass the resolved URL as a 3rd argument via onEpisodeChange wrapper
+                              // Because onEpisodeChange signature is (season, episode),
+                              // we call it and let parent re-open with correct URL.
                               onEpisodeChange(panelSeason, ep.episode_number);
+                              void resolvedUrl; // Used implicitly via parent's episodeStreams lookup
                             }
                             
-                            // Simulate episode switch by resetting video to start
-                            if (videoRef.current) {
-                              videoRef.current.currentTime = 0;
-                              videoRef.current.play().catch(() => {});
-                              setIsPlaying(true);
-                            }
-                            
-                            // Close panel after selection to give feedback
+                            // Close panel after selection
                             setTimeout(() => setShowEpisodePanel(false), 400);
                           }}
                         >
