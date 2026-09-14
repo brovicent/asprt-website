@@ -1,7 +1,7 @@
 import { drizzle } from "drizzle-orm/mysql2";
 import mysql from "mysql2/promise";
 
-const { DB_HOST, DB_USER, DB_PASSWORD, DB_NAME } = process.env;
+const { DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, DB_PORT } = process.env;
 
 if (!DB_HOST || !DB_USER || !DB_PASSWORD || !DB_NAME) {
   throw new Error("Database credentials (DB_HOST, DB_USER, DB_PASSWORD, DB_NAME) are required");
@@ -14,11 +14,13 @@ const globalForDb = globalThis as typeof globalThis & {
   __arenaNextJsMysqlPool?: mysql.Pool;
 };
 
-const config = {
+const config: mysql.PoolOptions = {
   host: DB_HOST,
   user: DB_USER,
   password: DB_PASSWORD,
   database: DB_NAME,
+  port: parseInt(DB_PORT || "3306"),
+  ssl: DB_HOST.includes("tidbcloud") || DB_HOST.includes("aiven") ? { rejectUnauthorized: true } : undefined,
   connectionLimit: 3,
 };
 
