@@ -163,9 +163,10 @@ function NavbarContent({ activeType }: { activeType?: "movie" | "tv_show" } = {}
             {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
           </button>
         </div>
-      </header>
+      </div>
+    </header>
 
-      {/* Mobile Menu Overlay */}
+    {/* Mobile Menu Overlay */}
       <div 
         className={`fixed inset-0 bg-black/95 backdrop-blur-xl z-[90] lg:hidden flex flex-col transition-all duration-300 ${
           isMobileMenuOpen ? "opacity-100 visible translate-x-0" : "opacity-0 invisible translate-x-full"
