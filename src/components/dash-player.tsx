@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import dashjs from "dashjs";
-import { Play, Pause, Volume1, VolumeX, Maximize, Minimize, Settings, Subtitles, ArrowLeft, LayoutList } from "lucide-react";
+import { Play, Pause, Volume1, VolumeX, Maximize, Minimize, Settings, Subtitles, ArrowLeft, LayoutList, Lock, Unlock, Sun } from "lucide-react";
 import { getTMDBSeason } from "@/lib/actions";
 
 interface CustomCue {
@@ -116,6 +116,13 @@ export default function DashPlayer({
   const menuTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const volumeHudTimer = useRef<NodeJS.Timeout | null>(null);
   const [showVolumeHud, setShowVolumeHud] = useState(false);
+  
+  // Lock & Gestures
+  const [isLocked, setIsLocked] = useState(false);
+  const [brightness, setBrightness] = useState(1);
+  const [showBrightnessHud, setShowBrightnessHud] = useState(false);
+  const brightnessHudTimer = useRef<NodeJS.Timeout | null>(null);
+  const touchState = useRef({ active: false, startY: 0, startX: 0, type: 'none' as 'volume' | 'brightness' | 'none', initialVal: 0 });
 
   // Episode panel state
   const [showEpisodePanel, setShowEpisodePanel] = useState(false);
@@ -130,6 +137,61 @@ export default function DashPlayer({
   const [selectedEp, setSelectedEp] = useState<{ season: number; episode: number } | null>(
     currentSeason && currentEpisode ? { season: currentSeason, episode: currentEpisode } : null
   );
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (isLocked) return;
+    if (e.touches.length !== 1) return;
+    const touch = e.touches[0];
+    const { clientX, clientY } = touch;
+    const { innerWidth } = window;
+    
+    // Left side for brightness, right side for volume
+    const type = clientX < innerWidth / 2 ? 'brightness' : 'volume';
+    
+    touchState.current = {
+      active: true,
+      startX: clientX,
+      startY: clientY,
+      type,
+      initialVal: type === 'brightness' ? brightness : volume,
+    };
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!touchState.current.active || isLocked) return;
+    const touch = e.touches[0];
+    const { clientY, clientX } = touch;
+    const deltaY = touchState.current.startY - clientY; // Up is positive
+    
+    const deltaX = Math.abs(touchState.current.startX - clientX);
+    if (deltaX > Math.abs(deltaY) && Math.abs(deltaY) < 20) return; // Prevent horizontal swipes
+    
+    const maxChangePx = 150; // 150px swipe = 100% change
+    let newVal = touchState.current.initialVal + (deltaY / maxChangePx);
+    newVal = Math.max(0, Math.min(1, newVal));
+    
+    if (touchState.current.type === 'brightness') {
+      setBrightness(newVal);
+      setShowBrightnessHud(true);
+      if (brightnessHudTimer.current) clearTimeout(brightnessHudTimer.current);
+      brightnessHudTimer.current = setTimeout(() => setShowBrightnessHud(false), 2000);
+    } else {
+      setVolume(newVal);
+      if (playerRef.current) {
+        playerRef.current.setVolume(newVal);
+      } else if (videoRef.current) {
+        videoRef.current.volume = newVal;
+      }
+      setIsMuted(newVal === 0);
+      setShowVolumeHud(true);
+      if (volumeHudTimer.current) clearTimeout(volumeHudTimer.current);
+      volumeHudTimer.current = setTimeout(() => setShowVolumeHud(false), 2000);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    touchState.current.active = false;
+  };
 
   const handleMenuMouseLeave = () => {
     menuTimeoutRef.current = setTimeout(() => {
@@ -751,7 +813,10 @@ export default function DashPlayer({
       
       {/* Video Element - fills all remaining space */}
       <div 
-        className="relative flex-1 w-full overflow-hidden bg-black"
+        className="relative flex-1 w-full overflow-hidden bg-black touch-none"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
         onClick={(e) => {
           e.stopPropagation();
           if (showEpisodePanel) { setShowEpisodePanel(false); return; }
@@ -767,6 +832,7 @@ export default function DashPlayer({
         }}
         onDoubleClick={(e) => {
           e.stopPropagation();
+          if (isLocked) return;
           togglePlay();
           handleUserActivity();
         }}
@@ -780,22 +846,44 @@ export default function DashPlayer({
           onCanPlay={() => setIsBuffering(false)}
         />
 
-        {/* Volume HUD Overlay */}
+        {/* Brightness Overlay (Simulated via black overlay with opacity) */}
+        <div 
+          className="absolute inset-0 bg-black pointer-events-none z-10 transition-opacity duration-75"
+          style={{ opacity: 1 - brightness }}
+        />
+
+        {/* Volume HUD Overlay (Left side) */}
         {showVolumeHud && (
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-50">
-            <div className="flex flex-col items-center gap-3 bg-black/60 backdrop-blur-sm rounded-2xl px-8 py-5 shadow-2xl">
+          <div className="absolute top-1/2 left-8 sm:left-12 -translate-y-1/2 flex items-center justify-center pointer-events-none z-50">
+            <div className="flex flex-col items-center gap-3 bg-black/60 backdrop-blur-sm rounded-2xl px-4 py-6 shadow-2xl">
               {isMuted || volume === 0 ? (
-                <VolumeX size={40} className="text-white" />
+                <VolumeX size={28} className="text-white" />
               ) : (
-                <Volume1 size={40} className="text-white" />
+                <Volume1 size={28} className="text-white" />
               )}
-              <div className="w-32 h-1.5 bg-white/20 rounded-full overflow-hidden">
+              <div className="w-1.5 h-24 sm:h-32 bg-white/20 rounded-full overflow-hidden flex flex-col justify-end">
                 <div 
-                  className="h-full bg-white rounded-full transition-all duration-150"
-                  style={{ width: `${Math.round(volume * 100)}%` }}
+                  className="w-full bg-white rounded-full transition-all duration-75"
+                  style={{ height: `${Math.round(volume * 100)}%` }}
                 />
               </div>
-              <span className="text-white text-sm font-semibold tabular-nums">{Math.round(volume * 100)}%</span>
+              <span className="text-white text-xs font-semibold tabular-nums">{Math.round(volume * 100)}%</span>
+            </div>
+          </div>
+        )}
+
+        {/* Brightness HUD Overlay (Right side) */}
+        {showBrightnessHud && (
+          <div className="absolute top-1/2 right-8 sm:right-12 -translate-y-1/2 flex items-center justify-center pointer-events-none z-50">
+            <div className="flex flex-col items-center gap-3 bg-black/60 backdrop-blur-sm rounded-2xl px-4 py-6 shadow-2xl">
+              <Sun size={28} className="text-white" />
+              <div className="w-1.5 h-24 sm:h-32 bg-white/20 rounded-full overflow-hidden flex flex-col justify-end">
+                <div 
+                  className="w-full bg-white rounded-full transition-all duration-75"
+                  style={{ height: `${Math.round(brightness * 100)}%` }}
+                />
+              </div>
+              <span className="text-white text-xs font-semibold tabular-nums">{Math.round(brightness * 100)}%</span>
             </div>
           </div>
         )}
@@ -838,7 +926,7 @@ export default function DashPlayer({
       {/* Top Controls Overlay - anchored to outer container */}
       <div 
         className={`absolute top-0 left-0 w-full p-4 sm:p-8 bg-gradient-to-b from-black/80 to-transparent flex items-center gap-4 z-10 pointer-events-none ${
-          showControls || !isPlaying ? "opacity-100" : "opacity-0"
+          (!isLocked && (showControls || !isPlaying)) ? "opacity-100" : "opacity-0"
         }`}
       >
         <button 
@@ -1035,10 +1123,35 @@ export default function DashPlayer({
           </div>
         )}
 
+      {/* Lock Button (Top Right) */}
+      <div 
+        className={`absolute top-4 right-4 sm:top-8 sm:right-8 z-50 transition-opacity duration-300 ${
+          showControls || !isPlaying ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        }`}
+      >
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            const newLocked = !isLocked;
+            setIsLocked(newLocked);
+            if (newLocked) {
+              setShowEpisodePanel(false);
+              setShowSettings(false);
+              setShowSubtitlePanel(false);
+            }
+            handleUserActivity();
+          }}
+          className="bg-black/40 hover:bg-black/60 backdrop-blur-md p-2 sm:p-3 rounded-full text-white hover:text-[#E50914] transition-all"
+          title={isLocked ? "Unlock Controls" : "Lock Controls"}
+        >
+          {isLocked ? <Lock className="w-5 h-5 sm:w-6 sm:h-6" /> : <Unlock className="w-5 h-5 sm:w-6 sm:h-6" />}
+        </button>
+      </div>
+
       {/* Bottom Controls Overlay */}
       <div 
         className={`absolute bottom-0 left-0 w-full px-2 sm:px-6 pb-2 sm:pb-6 pt-8 sm:pt-16 bg-gradient-to-t from-black/90 via-black/40 to-transparent flex flex-col z-20 transition-opacity duration-300 ${
-          showControls || !isPlaying || showSettings || showSubtitlePanel ? "opacity-100" : "opacity-0 pointer-events-none"
+          (!isLocked && (showControls || !isPlaying || showSettings || showSubtitlePanel || showEpisodePanel)) ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
         onClick={e => e.stopPropagation()}
         onMouseEnter={() => {
