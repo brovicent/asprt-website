@@ -85,7 +85,8 @@ export function SeriesEpisodes({ tmdbId, seasons, streamUrl, title, episodeStrea
     const params = new URLSearchParams(window.location.search);
     const s = params.get('s');
     const ep = params.get('ep');
-    if (s && ep) {
+    const play = params.get('play');
+    if (s && ep && play === 'true') {
       didAutoPlay.current = true;
       handlePlayEpisode(Number(s), Number(ep));
     }
