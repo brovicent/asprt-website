@@ -966,8 +966,8 @@ export default function DashPlayer({
         {/* Persistent Large Play Button when Paused */}
         {!isPlaying && !isBuffering && !centerIcon && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-30">
-            <div className="bg-black/50 backdrop-blur-sm rounded-full p-5 sm:p-8 shadow-2xl ring-4 ring-white/20 transition-all duration-300">
-              <Play className="w-14 h-14 sm:w-20 sm:h-20 text-white fill-white drop-shadow-lg" style={{ marginLeft: '4px' }} />
+            <div className="bg-black/40 rounded-full p-3 shadow-lg ring-2 ring-white/60">
+              <Play className="w-8 h-8 text-white fill-white" style={{ marginLeft: '2px' }} />
             </div>
           </div>
         )}
