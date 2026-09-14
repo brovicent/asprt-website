@@ -963,6 +963,15 @@ export default function DashPlayer({
           </div>
         )}
 
+        {/* Persistent Large Play Button when Paused */}
+        {!isPlaying && !isBuffering && !centerIcon && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-30">
+            <div className="bg-black/50 backdrop-blur-sm rounded-full p-5 sm:p-8 shadow-2xl ring-4 ring-white/20 transition-all duration-300">
+              <Play className="w-14 h-14 sm:w-20 sm:h-20 text-white fill-white drop-shadow-lg" style={{ marginLeft: '4px' }} />
+            </div>
+          </div>
+        )}
+
         {/* Brightness Overlay (Simulated via black overlay with opacity) */}
         <div 
           className="absolute inset-0 bg-black pointer-events-none z-10 transition-opacity duration-75"
