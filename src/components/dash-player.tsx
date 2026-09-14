@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import dashjs from "dashjs";
-import { Play, Pause, Volume2, VolumeX, Maximize, Minimize, Settings, Subtitles, ArrowLeft, LayoutList } from "lucide-react";
+import { Play, Pause, Volume1, VolumeX, Maximize, Minimize, Settings, Subtitles, ArrowLeft, LayoutList } from "lucide-react";
 import { getTMDBSeason } from "@/lib/actions";
 
 interface CustomCue {
@@ -111,6 +111,8 @@ export default function DashPlayer({
   const [subtitlePanelPage, setSubtitlePanelPage] = useState<"main" | "appearance">("main");
 
   const menuTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const volumeHudTimer = useRef<NodeJS.Timeout | null>(null);
+  const [showVolumeHud, setShowVolumeHud] = useState(false);
 
   // Episode panel state
   const [showEpisodePanel, setShowEpisodePanel] = useState(false);
@@ -579,6 +581,10 @@ export default function DashPlayer({
     videoRef.current.muted = newVol === 0;
     setVolume(newVol);
     setIsMuted(newVol === 0);
+    // Show volume HUD
+    setShowVolumeHud(true);
+    if (volumeHudTimer.current) clearTimeout(volumeHudTimer.current);
+    volumeHudTimer.current = setTimeout(() => setShowVolumeHud(false), 1200);
   };
 
   const formatTime = (time: number) => {
@@ -749,7 +755,26 @@ export default function DashPlayer({
           onCanPlay={() => setIsBuffering(false)}
         />
 
-        {/* Buffering Loading Indicator */}
+        {/* Volume HUD Overlay - shows when keyboard adjusts volume */}
+        {showVolumeHud && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-50">
+            <div className="flex flex-col items-center gap-3 bg-black/60 backdrop-blur-sm rounded-2xl px-8 py-5 shadow-2xl">
+              {isMuted || volume === 0 ? (
+                <VolumeX size={40} className="text-white" />
+              ) : (
+                <Volume1 size={40} className="text-white" />
+              )}
+              {/* Volume bar */}
+              <div className="w-32 h-1.5 bg-white/20 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-white rounded-full transition-all duration-150"
+                  style={{ width: `${Math.round(volume * 100)}%` }}
+                />
+              </div>
+              <span className="text-white text-sm font-semibold tabular-nums">{Math.round(volume * 100)}%</span>
+            </div>
+          </div>
+        )}
         {isBuffering && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-30">
             <div className="w-16 h-16 border-4 border-white/20 border-t-[#E50914] rounded-full animate-spin"></div>
@@ -1059,7 +1084,7 @@ export default function DashPlayer({
             {/* Volume Control */}
             <div className="relative flex items-center justify-center group/vol">
               <button onClick={toggleMute} className="text-white hover:text-white/70 transition-colors z-10">
-                {isMuted || volume === 0 ? <VolumeX size={28} /> : <Volume2 size={28} />}
+                {isMuted || volume === 0 ? <VolumeX size={28} /> : <Volume1 size={28} />}
               </button>
               
               {/* Vertical Slider Popup */}
