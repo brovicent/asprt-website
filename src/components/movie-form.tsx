@@ -12,6 +12,8 @@ import {
   Trash2,
 } from "lucide-react";
 import Link from "next/link";
+import { getTMDBMovie, getTMDBTvShow } from "@/lib/actions";
+import StreamConfigBuilder from "./stream-config-builder";
 import { cn } from "@/lib/utils";
 import { EpisodeStreamManager } from "@/components/episode-stream-manager";
 
@@ -325,7 +327,10 @@ export default function MovieForm({
   }
 
   return (
-    <>
+    <div className="space-y-8">
+    {mode === "edit" && formData.contentType === "tv_show" && movieId && (
+      <EpisodeStreamManager movieId={movieId} />
+    )}
     <form onSubmit={handleSubmit} className="space-y-8 animate-fade-in">
       {submitSuccess && (
         <div className="px-4 py-3 bg-success/10 border border-success/20 rounded-lg text-success text-sm flex items-center gap-2">
@@ -337,6 +342,21 @@ export default function MovieForm({
           {submitError}
         </div>
       )}
+      {/* Stream / Media JSON */}
+      {formData.contentType === "movie" && (
+        <div className="bg-surface border border-border rounded-xl p-6 space-y-5">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-text-primary">
+              Stream & Subtitles Configuration
+            </h2>
+          </div>
+          <StreamConfigBuilder
+            value={formData.streamUrl || ""}
+            onChange={(val) => setFormData((prev) => ({ ...prev, streamUrl: val }))}
+          />
+        </div>
+      )}
+
       {/* Basic Info */}
       <div className="bg-surface border border-border rounded-xl p-6 space-y-5">
         <h2 className="text-lg font-semibold text-text-primary">
@@ -669,29 +689,6 @@ export default function MovieForm({
               </div>
             )}
           </div>
-          
-          {formData.contentType === "movie" && (
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-text-secondary mb-1.5">
-                Stream / Media Configuration (JSON)
-              </label>
-              <textarea
-                value={formData.streamUrl || ""}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    streamUrl: e.target.value,
-                  }))
-                }
-                rows={4}
-                className="w-full px-4 py-2.5 bg-surface-elevated border border-border rounded-lg text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all font-mono text-sm resize-y"
-                placeholder={`{\n  "url": "https://.../manifest.mpd",\n  "subtitles": [...]\n}`}
-              />
-              <p className="text-xs text-text-muted mt-1.5">
-                Paste your DASH player JSON configuration or simply the raw .mpd URL here.
-              </p>
-            </div>
-          )}
         </div>
       </div>
 
@@ -846,10 +843,6 @@ export default function MovieForm({
         </button>
       </div>
     </form>
-    
-    {mode === "edit" && formData.contentType === "tv_show" && movieId && (
-      <EpisodeStreamManager movieId={movieId} />
-    )}
-    </>
+    </div>
   );
 }

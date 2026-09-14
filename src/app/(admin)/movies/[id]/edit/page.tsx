@@ -25,6 +25,7 @@ interface Movie {
   genres: string[] | null;
   language: string | null;
   status: string | null;
+  streamUrl: string | null;
 }
 
 interface DownloadLink {
@@ -109,6 +110,7 @@ export default function EditMoviePage({
           genres: (movie.genres as string[]) || [],
           language: movie.language || "",
           status: movie.status || "published",
+          streamUrl: movie.streamUrl || "",
         }}
         initialLinks={downloadLinks.map((link) => ({
           id: link.id,

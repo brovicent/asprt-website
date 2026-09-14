@@ -39,6 +39,16 @@ interface DashPlayerProps {
   onEpisodeChange?: (season: number, episode: number) => void;
 }
 
+// Helper to determine the quality label based on width/height
+const getQualityLabel = (width: number, height: number) => {
+  if (width >= 3700 || height >= 2000) return "4K";
+  if ((width >= 1800 && width <= 2560) || (height >= 900 && height <= 1200)) return "1080p";
+  if ((width >= 1200 && width <= 1700) || (height >= 600 && height <= 850)) return "720p";
+  if ((width >= 700 && width <= 1000) || (height >= 400 && height <= 550)) return "480p";
+  if ((width >= 500 && width <= 690) || (height >= 300 && height <= 390)) return "360p";
+  return `${height}p`;
+};
+
 export default function DashPlayer({ 
   url, 
   title, 
@@ -79,6 +89,7 @@ export default function DashPlayer({
   const [customCues, setCustomCues] = useState<CustomCue[]>([]);
   const [useCustomSubtitle, setUseCustomSubtitle] = useState(false);
   const [customSubtitleName, setCustomSubtitleName] = useState<string>("");
+  const [externalSubtitles, setExternalSubtitles] = useState<{lang: string, url: string}[]>([]);
 
   // Subtitle appearance settings
   const [subtitleFontSize, setSubtitleFontSize] = useState(44);
@@ -226,6 +237,44 @@ export default function DashPlayer({
     reader.readAsText(file);
   };
 
+  const loadExternalSubtitle = async (sub: {lang: string, url: string}, idx: number) => {
+    try {
+      const response = await fetch(sub.url);
+      if (!response.ok) return;
+      const text = await response.text();
+      const cues: CustomCue[] = [];
+      const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+      
+      let i = 0;
+      while (i < lines.length) {
+        const line = lines[i].trim();
+        if (!line) { i++; continue; }
+        if (line.includes('-->')) {
+          const parts = line.split('-->');
+          const start = parseTime(parts[0].trim());
+          const end = parseTime(parts[1].trim());
+          let textLines = [];
+          i++;
+          while (i < lines.length && lines[i].trim() !== '' && !lines[i].includes('-->')) {
+            textLines.push(lines[i].trim());
+            i++;
+          }
+          if (!isNaN(start) && !isNaN(end)) {
+            cues.push({ start, end, text: textLines.join('\n') });
+          }
+        } else {
+          i++;
+        }
+      }
+      setCustomCues(cues);
+      setCustomSubtitleName(sub.lang);
+      setUseCustomSubtitle(true);
+      setCurrentTrackIdx(-100 - idx);
+    } catch (e) {
+      console.error("External subtitle error", e);
+    }
+  };
+
   useEffect(() => {
     if (!videoRef.current) return;
 
@@ -247,6 +296,18 @@ export default function DashPlayer({
             finalUrl = extracted;
           }
         }
+        
+        let extSubs: {lang: string, url: string}[] = [];
+        if (parsed.subtitles && Array.isArray(parsed.subtitles)) {
+          extSubs = parsed.subtitles.map((sub: any) => {
+            let subUrl = sub.url || "";
+            const mdMatch = subUrl.match(/\]\((https?:\/\/[^\)]+)\)/);
+            if (mdMatch) subUrl = mdMatch[1];
+            subUrl = subUrl.replace(/\\([\(\)])/g, '$1');
+            return { lang: sub.lang || "External", url: subUrl };
+          }).filter((s: any) => s.url);
+        }
+        setExternalSubtitles(extSubs);
       }
     } catch (e) {
       // Not JSON, assume it's a raw URL string
@@ -959,7 +1020,7 @@ export default function DashPlayer({
                         onClick={() => changeQuality(b.qualityIndex)}
                         className={`text-left text-sm font-medium px-3 py-2 rounded-lg transition-colors ${currentBitrateIdx === b.qualityIndex ? "bg-white/10 text-white font-bold" : "text-white/70 hover:bg-white/5 hover:text-white"}`}
                       >
-                        {b.height}p <span className="text-white/30 text-xs ml-2">{(b.bitrate / 1000000).toFixed(1)} Mbps</span>
+                        {getQualityLabel(b.width, b.height)} <span className="text-white/30 text-xs ml-2">{(b.bitrate / 1000000).toFixed(1)} Mbps</span>
                       </button>
                     ))}
                   </div>
@@ -1003,7 +1064,7 @@ export default function DashPlayer({
                     >
                       Off
                     </button>
-                    {customSubtitleName && (
+                    {customSubtitleName && currentTrackIdx >= -1 && (
                       <button
                         onClick={() => { setUseCustomSubtitle(true); changeSubtitle(-1); }}
                         className={`text-left text-sm font-medium px-3 py-2 rounded-lg transition-colors truncate ${useCustomSubtitle ? "bg-white/10 text-white font-bold" : "text-white/70 hover:bg-white/5 hover:text-white"}`}
@@ -1011,6 +1072,15 @@ export default function DashPlayer({
                         {customSubtitleName}
                       </button>
                     )}
+                    {externalSubtitles.map((sub, idx) => (
+                      <button
+                        key={`ext-${idx}`}
+                        onClick={() => { loadExternalSubtitle(sub, idx); setShowSubtitlePanel(false); }}
+                        className={`text-left text-sm font-medium px-3 py-2 rounded-lg transition-colors ${currentTrackIdx === (-100 - idx) && useCustomSubtitle ? "bg-white/10 text-white font-bold" : "text-white/70 hover:bg-white/5 hover:text-white"}`}
+                      >
+                        {sub.lang}
+                      </button>
+                    ))}
                     {tracks.map((t, idx) => (
                       <button
                         key={idx}
