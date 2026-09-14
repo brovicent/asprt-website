@@ -23,7 +23,7 @@ export function HeroBanner({ movies, logos = [] }: { movies: any[], logos?: (str
   const goToSlide = (index: number) => setCurrentIndex(index);
 
   return (
-    <div className="relative w-full h-[70vh] sm:h-[85vh] md:h-[90vh] min-h-[500px] flex items-end pb-24 sm:pb-36 group overflow-hidden">
+    <div className="relative w-full h-[60vh] sm:h-[75vh] md:h-[90vh] min-h-[450px] flex items-end pb-24 sm:pb-36 group overflow-hidden">
       
       {/* Background Images with Crossfade */}
       {movies.map((m, idx) => (
@@ -57,7 +57,7 @@ export function HeroBanner({ movies, logos = [] }: { movies: any[], logos?: (str
             return (
               <div 
                 key={`content-${m.id}`}
-                className={`absolute bottom-16 sm:bottom-20 left-0 w-full transform ${
+                className={`absolute bottom-12 sm:bottom-20 left-0 w-full transform ${
                   isActive 
                     ? 'opacity-100 translate-y-0 pointer-events-auto z-10 transition-all duration-1000 ease-out delay-100' 
                     : 'opacity-0 translate-y-8 pointer-events-none -z-10 transition-none'
@@ -71,7 +71,7 @@ export function HeroBanner({ movies, logos = [] }: { movies: any[], logos?: (str
                     loading={idx === 0 ? "eager" : "lazy"}
                   />
                 ) : (
-                  <h1 className="text-5xl sm:text-6xl md:text-7xl font-black text-white tracking-tighter drop-shadow-xl mb-4">
+                  <h1 className="text-4xl sm:text-5xl md:text-7xl font-black text-white tracking-tighter drop-shadow-xl mb-4">
                     {m.title}
                   </h1>
                 )}
@@ -111,7 +111,7 @@ export function HeroBanner({ movies, logos = [] }: { movies: any[], logos?: (str
       </div>
 
       {/* Pagination Indicators */}
-      <div className="absolute bottom-20 sm:bottom-28 left-0 right-0 z-20 flex items-center justify-center gap-2">
+      <div className="absolute bottom-16 sm:bottom-28 left-0 right-0 z-20 flex items-center justify-center gap-2">
         <style>{`
           @keyframes slideProgress {
             0% { width: 0%; }

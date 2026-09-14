@@ -79,14 +79,14 @@ export function MovieRow({ title, movies, viewAllLink }: { title: string, movies
         {/* Navigation Buttons */}
         <button
           onClick={() => scroll("left")}
-          className="absolute left-0 top-0 bottom-0 z-20 w-12 bg-gradient-to-r from-background to-transparent opacity-0 group-hover:opacity-100 flex items-center justify-start pl-2 text-white transition-opacity focus:outline-none disabled:opacity-0 pointer-events-none sm:pointer-events-auto"
+          className="absolute left-0 top-0 bottom-0 z-20 w-12 bg-gradient-to-r from-background to-transparent hidden md:flex opacity-0 group-hover:opacity-100 items-center justify-start pl-2 text-white transition-opacity focus:outline-none disabled:opacity-0"
           aria-label="Scroll left"
         >
           <ChevronLeft size={32} className="drop-shadow-lg" />
         </button>
         <button
           onClick={() => scroll("right")}
-          className="absolute right-0 top-0 bottom-0 z-20 w-12 bg-gradient-to-l from-background to-transparent opacity-0 group-hover:opacity-100 flex items-center justify-end pr-2 text-white transition-opacity focus:outline-none pointer-events-none sm:pointer-events-auto"
+          className="absolute right-0 top-0 bottom-0 z-20 w-12 bg-gradient-to-l from-background to-transparent hidden md:flex opacity-0 group-hover:opacity-100 items-center justify-end pr-2 text-white transition-opacity focus:outline-none"
           aria-label="Scroll right"
         >
           <ChevronRight size={32} className="drop-shadow-lg" />

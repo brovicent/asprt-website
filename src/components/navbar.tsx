@@ -3,10 +3,11 @@
 import { Suspense, useState, useEffect } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Search, Home, Film, Tv, PlaySquare, Grid, Tags, Users, Globe, Calendar, Radio } from "lucide-react";
+import { Search, Home, Film, Tv, PlaySquare, Grid, Tags, Users, Globe, Calendar, Radio, Menu, X } from "lucide-react";
 
 function NavbarContent({ activeType }: { activeType?: "movie" | "tv_show" } = {}) {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const searchParams = useSearchParams();
   
   const type = searchParams.get("type");
@@ -20,8 +21,19 @@ function NavbarContent({ activeType }: { activeType?: "movie" | "tv_show" } = {}
     };
     window.addEventListener("scroll", handleScroll);
     handleScroll();
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+
+    // Prevent body scroll when mobile menu is open
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      document.body.style.overflow = "unset";
+    };
+  }, [isMobileMenuOpen]);
 
   const activeTab = activeType || (type === "movie" ? "movie" : type === "tv_show" ? "tv_show" : (!type && !search && !genre) ? "home" : "");
 
@@ -125,7 +137,7 @@ function NavbarContent({ activeType }: { activeType?: "movie" | "tv_show" } = {}
           </nav>
         </div>
 
-        {/* Right Side: Search */}
+        {/* Right Side: Search & Mobile Menu Button */}
         <div className="flex items-center gap-4">
           <form action="/" className="relative hidden md:block">
             <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 z-10 pointer-events-none" />
@@ -140,6 +152,85 @@ function NavbarContent({ activeType }: { activeType?: "movie" | "tv_show" } = {}
               suppressHydrationWarning
             />
           </form>
+
+          {/* Mobile Menu Toggle */}
+          <button 
+            className="lg:hidden p-2 text-white/80 hover:text-white transition-colors"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            aria-label="Toggle mobile menu"
+          >
+            {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile Menu Overlay */}
+      <div 
+        className={`fixed inset-0 bg-black/95 backdrop-blur-xl z-40 lg:hidden flex flex-col transition-all duration-300 ${
+          isMobileMenuOpen ? "opacity-100 visible translate-x-0" : "opacity-0 invisible translate-x-full"
+        }`}
+        style={{ top: "60px" }} // offset below header
+      >
+        <div className="flex flex-col p-6 gap-8 h-full overflow-y-auto">
+          {/* Mobile Search */}
+          <form action="/" className="relative w-full md:hidden">
+            <Search size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 z-10 pointer-events-none" />
+            <input
+              type="text"
+              name="search"
+              defaultValue={search || ""}
+              placeholder="Search movies, tv series..."
+              className="w-full px-12 py-4 rounded-2xl text-base font-medium text-white placeholder:text-white/40 bg-white/5 border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#ff0033] transition-all"
+              suppressHydrationWarning
+            />
+          </form>
+
+          {/* Mobile Navigation Links */}
+          <nav className="flex flex-col gap-2">
+            {navItems.map((item) => {
+              const isActive = activeTab === item.id;
+              const Icon = item.icon;
+              
+              if (item.id === "genres") {
+                return (
+                  <div key={item.id} className="flex flex-col gap-2">
+                    <div className="flex items-center gap-3 px-4 py-3 text-white/60">
+                      <Icon size={20} />
+                      <span className="font-semibold text-lg">Genres</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 pl-12 pr-4">
+                      {["Action", "Comedy", "Drama", "Horror", "Romance", "Sci-Fi", "Thriller"].map(g => (
+                        <Link
+                          key={g}
+                          href={`/?genre=${encodeURIComponent(g)}`}
+                          onClick={() => setIsMobileMenuOpen(false)}
+                          className="text-sm font-medium text-white/60 hover:text-white py-2"
+                        >
+                          {g}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                );
+              }
+
+              return (
+                <Link
+                  key={item.id}
+                  href={item.href}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`flex items-center gap-4 px-4 py-4 rounded-2xl transition-all duration-300 ${
+                    isActive 
+                      ? "bg-[#ff0033]/10 text-[#ff0033]" 
+                      : "text-white/80 hover:text-white hover:bg-white/5"
+                  }`}
+                >
+                  <Icon size={22} strokeWidth={isActive ? 2.5 : 2} className={isActive ? "text-[#ff0033]" : "text-white/60"} />
+                  <span className="font-bold text-lg">{item.label}</span>
+                </Link>
+              );
+            })}
+          </nav>
         </div>
       </div>
     </header>
