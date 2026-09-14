@@ -46,8 +46,8 @@ export function StreamButton({ streamUrl, title, seasons, tmdbId, contentType, c
   }, [isOpen]);
 
   // For testing, use a dummy DASH url if streamUrl is missing
-  // Updated to point to the user's local DASH server running on port 8080 (using the fixed manifest)
-  const urlToPlay = streamUrl || (mounted ? `/video-stream/manifest_fixed.mpd` : "");
+  // Updated to point to a public DASH stream for Vercel testing
+  const urlToPlay = streamUrl || "https://dash.akamaized.net/akamai/bbb_30fps/bbb_30fps.mpd";
 
   const [playingSeason, setPlayingSeason] = useState<number>(currentSeason || 1);
   const [playingEpisode, setPlayingEpisode] = useState<number>(currentEpisode || 1);

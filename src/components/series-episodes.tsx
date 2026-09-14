@@ -129,8 +129,8 @@ export function SeriesEpisodes({ tmdbId, seasons, streamUrl, title, episodeStrea
     if (specificStream && specificStream.streamUrl) {
       setCurrentUrlToPlay(specificStream.streamUrl);
     } else {
-      // Fallback to global series streamUrl
-      setCurrentUrlToPlay(streamUrl || (mounted ? `/video-stream/manifest_fixed.mpd` : ""));
+      // Fallback to a public DASH stream for dummy data so it works on Vercel
+      setCurrentUrlToPlay(streamUrl || "https://dash.akamaized.net/akamai/bbb_30fps/bbb_30fps.mpd");
     }
     
     setPlayerOpen(true);
