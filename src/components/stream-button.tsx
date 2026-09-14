@@ -22,9 +22,10 @@ interface StreamButtonProps {
   contentType?: string;
   currentSeason?: number;
   currentEpisode?: number;
+  episodeStreams?: { id: number; seasonNumber: number; episodeNumber: number; streamUrl: string }[];
 }
 
-export function StreamButton({ streamUrl, title, seasons, tmdbId, contentType, currentSeason, currentEpisode }: StreamButtonProps) {
+export function StreamButton({ streamUrl, title, seasons, tmdbId, contentType, currentSeason, currentEpisode, episodeStreams = [] }: StreamButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
@@ -45,22 +46,24 @@ export function StreamButton({ streamUrl, title, seasons, tmdbId, contentType, c
     };
   }, [isOpen]);
 
-  // For testing, use a dummy DASH url if streamUrl is missing
-  // Updated to point to a public DASH stream for Vercel testing
-  const urlToPlay = streamUrl || "https://dash.akamaized.net/akamai/bbb_30fps/bbb_30fps.mpd";
+  const fallbackUrl = "https://dash.akamaized.net/akamai/bbb_30fps/bbb_30fps.mpd";
 
   const [playingSeason, setPlayingSeason] = useState<number>(currentSeason || 1);
   const [playingEpisode, setPlayingEpisode] = useState<number>(currentEpisode || 1);
-
-  // Update local state if props change
-  useEffect(() => {
-    if (currentSeason) setPlayingSeason(currentSeason);
-    if (currentEpisode) setPlayingEpisode(currentEpisode);
-  }, [currentSeason, currentEpisode]);
+  const [currentUrlToPlay, setCurrentUrlToPlay] = useState<string>(() => {
+    // Pick the initial URL: use first episodeStream for S1E1, else fallback
+    const initStream = episodeStreams.find(s => s.seasonNumber === (currentSeason || 1) && s.episodeNumber === (currentEpisode || 1));
+    return initStream?.streamUrl || streamUrl || fallbackUrl;
+  });
 
   const handleEpisodeChange = (seasonNum: number, epNum: number) => {
     setPlayingSeason(seasonNum);
     setPlayingEpisode(epNum);
+    // Look up the specific stream URL — same logic as SeriesEpisodes.handlePlayEpisode
+    const specificStream = episodeStreams.find(
+      s => s.seasonNumber === seasonNum && s.episodeNumber === epNum
+    );
+    setCurrentUrlToPlay(specificStream?.streamUrl || streamUrl || fallbackUrl);
   };
 
   const modalContent = isOpen && mounted ? (
@@ -68,7 +71,7 @@ export function StreamButton({ streamUrl, title, seasons, tmdbId, contentType, c
       <div className="relative w-full h-full flex flex-col">
         <DashPlayer 
           key={`${playingSeason}-${playingEpisode}`}
-          url={urlToPlay} 
+          url={currentUrlToPlay} 
           title={title} 
           onClose={() => setIsOpen(false)}
           seasons={seasons}
@@ -77,6 +80,8 @@ export function StreamButton({ streamUrl, title, seasons, tmdbId, contentType, c
           currentSeason={playingSeason}
           currentEpisode={playingEpisode}
           onEpisodeChange={handleEpisodeChange}
+          episodeStreams={episodeStreams}
+          fallbackStreamUrl={streamUrl || undefined}
         />
       </div>
     </div>

@@ -140,6 +140,7 @@ export default async function PublicMoviePage({ params }: { params: Promise<{ sl
                   seasons={movie.contentType === "tv_show" ? (tmdbDetails?.seasons ?? undefined) : undefined}
                   tmdbId={movie.contentType === "tv_show" ? (movie.imdbId ?? undefined) : undefined}
                   contentType={movie.contentType}
+                  episodeStreams={movie.contentType === "tv_show" ? epStreams : undefined}
                 />
                 {movie.trailerKey && (
                   <TrailerButton
