@@ -103,7 +103,10 @@ export default function DashPlayer({
   const [externalSubtitles, setExternalSubtitles] = useState<{lang: string, url: string}[]>([]);
 
   // Subtitle appearance settings
-  const [subtitleFontSize, setSubtitleFontSize] = useState(44);
+  const [subtitleFontSize, setSubtitleFontSize] = useState(() => {
+    if (typeof window !== "undefined" && window.innerWidth < 768) return 24;
+    return 44;
+  });
   const [subtitleBottom, setSubtitleBottom] = useState(160);
   const [subtitleDelay, setSubtitleDelay] = useState(0);
   const [subtitleFont, setSubtitleFont] = useState("Arial, sans-serif");
@@ -751,10 +754,19 @@ export default function DashPlayer({
         className="relative flex-1 w-full overflow-hidden bg-black"
         onClick={(e) => {
           e.stopPropagation();
-          if (showEpisodePanel) {
-            setShowEpisodePanel(false);
-            return;
+          if (showEpisodePanel) { setShowEpisodePanel(false); return; }
+          if (showSettings) { setShowSettings(false); return; }
+          if (showSubtitlePanel) { setShowSubtitlePanel(false); return; }
+          
+          if (showControls) {
+            setShowControls(false);
+            if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
+          } else {
+            handleUserActivity();
           }
+        }}
+        onDoubleClick={(e) => {
+          e.stopPropagation();
           togglePlay();
           handleUserActivity();
         }}
