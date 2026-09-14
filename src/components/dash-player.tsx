@@ -116,6 +116,7 @@ export default function DashPlayer({
 
   const [centerIcon, setCenterIcon] = useState<{ type: "play" | "pause", id: number } | null>(null);
   const centerIconTimer = useRef<NodeJS.Timeout | null>(null);
+  const isPlayPending = useRef(false);
 
   const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -522,7 +523,7 @@ export default function DashPlayer({
     return () => {
       isMounted = false;
       if (playerRef.current) {
-        playerRef.current.reset();
+        playerRef.current.destroy();
         playerRef.current = null;
       }
     };
@@ -609,11 +610,24 @@ export default function DashPlayer({
   };
 
   const togglePlay = () => {
-    if (videoRef.current?.paused) {
-      videoRef.current.play();
-      triggerCenterIcon("play");
+    if (!videoRef.current || isPlayPending.current) return;
+
+    if (videoRef.current.paused) {
+      isPlayPending.current = true;
+      const playPromise = videoRef.current.play();
+      if (playPromise !== undefined) {
+        playPromise.then(() => {
+          isPlayPending.current = false;
+          triggerCenterIcon("play");
+        }).catch(() => {
+          isPlayPending.current = false;
+        });
+      } else {
+        isPlayPending.current = false;
+        triggerCenterIcon("play");
+      }
     } else {
-      videoRef.current?.pause();
+      videoRef.current.pause();
       triggerCenterIcon("pause");
     }
   };
