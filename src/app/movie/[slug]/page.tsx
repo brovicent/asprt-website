@@ -23,8 +23,10 @@ function escapeHtml(html: string): string {
     .replace(/&lt;a href=&quot;(https?:\/\/[^&"<>]+)&quot;&gt;(.+?)&lt;\/a&gt;/g, '<a href="$1">$2</a>');
 }
 
-export default async function PublicMoviePage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function PublicMoviePage({ params, searchParams }: { params: Promise<{ slug: string }>, searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
   const { slug } = await params;
+  const search = await searchParams;
+  const autoPlay = search.play === 'true';
   const session = await getSession();
   const isAdmin = session?.role === "admin";
   const statusCondition = isAdmin ? eq(movies.slug, slug) : and(eq(movies.slug, slug), eq(movies.status, "published"));
@@ -141,6 +143,9 @@ export default async function PublicMoviePage({ params }: { params: Promise<{ sl
                   tmdbId={movie.contentType === "tv_show" ? (movie.imdbId ?? undefined) : undefined}
                   contentType={movie.contentType}
                   episodeStreams={movie.contentType === "tv_show" ? epStreams : undefined}
+                  autoPlay={autoPlay}
+                  currentSeason={currentSeason}
+                  currentEpisode={currentEpisode}
                 />
                 {movie.trailerKey && (
                   <TrailerButton
@@ -169,6 +174,7 @@ export default async function PublicMoviePage({ params }: { params: Promise<{ sl
                 streamUrl={movie.streamUrl ?? undefined}
                 title={movie.title}
                 episodeStreams={epStreams}
+                initialSeason={currentSeason}
               />
             </div>
           )}

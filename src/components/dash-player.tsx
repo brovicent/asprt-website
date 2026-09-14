@@ -697,15 +697,28 @@ export default function DashPlayer({
     }
   };
 
-  // Update URL with current season + episode so reload restores position
+  // Update URL with current season + episode + play status so reload restores position
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    params.set("play", "true");
+    
     if (contentType === 'tv_show' && currentSeason && currentEpisode) {
-      window.history.replaceState(
-        null, '',
-        `${window.location.pathname}?s=${currentSeason}&ep=${currentEpisode}`
-      );
+      params.set("s", currentSeason.toString());
+      params.set("ep", currentEpisode.toString());
     }
+    
+    window.history.replaceState(null, '', `${window.location.pathname}?${params.toString()}`);
   }, [currentSeason, currentEpisode, contentType]);
+
+  // Clean up 'play' param when player is closed
+  useEffect(() => {
+    return () => {
+      const params = new URLSearchParams(window.location.search);
+      params.delete("play");
+      const newUrl = params.toString() ? `${window.location.pathname}?${params.toString()}` : window.location.pathname;
+      window.history.replaceState(null, '', newUrl);
+    };
+  }, []);
 
   const currentEpData = panelEpisodes.find(ep => ep.episode_number === (selectedEp?.episode ?? currentEpisode));
 

@@ -42,13 +42,13 @@ interface SeriesEpisodesProps {
   tmdbId: string;
   seasons: Season[];
   streamUrl?: string;
-  title?: string;
   episodeStreams?: EpisodeStream[];
+  initialSeason?: number;
 }
 
-export function SeriesEpisodes({ tmdbId, seasons, streamUrl, title, episodeStreams = [] }: SeriesEpisodesProps) {
+export function SeriesEpisodes({ tmdbId, seasons, streamUrl, title, episodeStreams = [], initialSeason }: SeriesEpisodesProps) {
   const validSeasons = seasons.filter(s => s.season_number > 0);
-  const [selectedSeason, setSelectedSeason] = useState<number>(validSeasons.length > 0 ? validSeasons[0].season_number : 1);
+  const [selectedSeason, setSelectedSeason] = useState<number>(initialSeason || (validSeasons.length > 0 ? validSeasons[0].season_number : 1));
   const [episodes, setEpisodes] = useState<Episode[]>([]);
   const [loading, setLoading] = useState(true);
   const [mounted, setMounted] = useState(false);

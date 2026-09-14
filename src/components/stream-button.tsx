@@ -23,10 +23,11 @@ interface StreamButtonProps {
   currentSeason?: number;
   currentEpisode?: number;
   episodeStreams?: { id: number; seasonNumber: number; episodeNumber: number; streamUrl: string }[];
+  autoPlay?: boolean;
 }
 
-export function StreamButton({ streamUrl, title, seasons, tmdbId, contentType, currentSeason, currentEpisode, episodeStreams = [] }: StreamButtonProps) {
-  const [isOpen, setIsOpen] = useState(false);
+export function StreamButton({ streamUrl, title, seasons, tmdbId, contentType, currentSeason, currentEpisode, episodeStreams = [], autoPlay = false }: StreamButtonProps) {
+  const [isOpen, setIsOpen] = useState(autoPlay);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
