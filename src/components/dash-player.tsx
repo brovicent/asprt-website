@@ -143,10 +143,10 @@ export default function DashPlayer({
   }, [tmdbId]);
 
   useEffect(() => {
-    if (showEpisodePanel && tmdbId) {
+    if (contentType === 'tv_show' && tmdbId) {
       fetchPanelEpisodes(panelSeason);
     }
-  }, [showEpisodePanel, panelSeason, fetchPanelEpisodes, tmdbId]);
+  }, [panelSeason, fetchPanelEpisodes, tmdbId, contentType]);
 
   // Auto center active episode in scroll view
   useEffect(() => {
@@ -645,257 +645,263 @@ export default function DashPlayer({
         }
       `}} />
       
-      <video
-        ref={videoRef}
-        className="w-full h-full object-contain"
-        autoPlay
-        onClick={togglePlay}
-        onWaiting={() => setIsBuffering(true)}
-        onPlaying={() => setIsBuffering(false)}
-        onCanPlay={() => setIsBuffering(false)}
-      />
+      {/* Video Element */}
+      <div className="relative flex-1 w-full flex items-center justify-center overflow-hidden bg-black" onClick={togglePlay}>
+        <video
+          ref={videoRef}
+          className="w-full h-full object-contain"
+          autoPlay
+          onClick={togglePlay}
+          onWaiting={() => setIsBuffering(true)}
+          onPlaying={() => setIsBuffering(false)}
+          onCanPlay={() => setIsBuffering(false)}
+        />
 
-      {/* Buffering Loading Indicator */}
-      {isBuffering && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-30">
-          <div className="w-16 h-16 border-4 border-white/20 border-t-[#E50914] rounded-full animate-spin"></div>
-        </div>
-      )}
-      
-      {/* Hidden Subtitle File Input - kept outside conditional renders to prevent unmounting during dialog */}
-      <input 
-        ref={fileInputRef}
-        type="file" 
-        accept=".srt,.vtt" 
-        className="hidden" 
-        onChange={handleUploadSubtitle} 
-      />
-      
-      {/* Custom Subtitle Overlay */}
-      {activeSubtitle && (currentTrackIdx !== -1 || useCustomSubtitle) && (
-        <div
-          className="absolute w-full flex justify-center pointer-events-none z-40 px-16"
-          style={{ bottom: `${showControls || !isPlaying ? subtitleBottom : Math.max(20, subtitleBottom - 60)}px` }}
-        >
-          <div
-            className="text-white font-bold text-center whitespace-pre-line"
-            style={{
-              fontSize: `${subtitleFontSize}px`,
-              lineHeight: "1.4",
-              fontFamily: subtitleFont,
-              textShadow: "0 1px 3px rgba(0,0,0,1), 0 2px 6px rgba(0,0,0,1), 0 0 10px rgba(0,0,0,0.8)",
-            }}
-          >
-            {activeSubtitle}
+        {/* Buffering Loading Indicator */}
+        {isBuffering && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-30">
+            <div className="w-16 h-16 border-4 border-white/20 border-t-[#E50914] rounded-full animate-spin"></div>
           </div>
-        </div>
-      )}
-
-      {/* Top Controls Overlay */}
-      <div 
-        className={`absolute top-0 left-0 w-full p-6 sm:p-8 bg-gradient-to-b from-black/80 to-transparent flex items-start z-10 ${
-          showControls || !isPlaying ? "opacity-100" : "opacity-0 pointer-events-none"
-        }`}
-      >
-        <button 
-          onClick={onClose}
-          className="text-white hover:scale-110 hover:text-[#E50914] transition-all"
-          title="Back"
-        >
-          <ArrowLeft size={32} />
-        </button>
-      </div>
-
-      {/* Episode Panel Overlay (Netflix-style) */}
-      {showEpisodePanel && seasons && seasons.length > 0 && (showControls || !isPlaying) && (
-        <div
-          className="absolute bottom-0 left-0 w-full z-50"
-          style={{ paddingBottom: "88px" }}
-          onClick={e => e.stopPropagation()}
-          onMouseEnter={() => {
-            // Keep controls and panel visible while hovering
-            if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
-            setShowControls(true);
-          }}
-          onMouseLeave={handleUserActivity}
-        >
-          {/* Gradient blend at top */}
-          <div className="absolute top-0 left-0 w-full h-8 bg-gradient-to-b from-transparent to-[#0e0e0e] pointer-events-none -translate-y-full" />
-          <div className="w-full" style={{ background: "#0e0e0e" }}>
-            {/* Header row */}
-            <div className="flex items-center justify-between px-8 pt-5 pb-3">
-              <div className="relative">
-                <select
-                  value={panelSeason}
-                  onChange={e => setPanelSeason(Number(e.target.value))}
-                  className="appearance-none bg-[#2a2a2a] hover:bg-[#333] border border-[#3a3a3a] text-white text-sm font-bold rounded-lg pl-4 pr-9 py-2 outline-none cursor-pointer"
-                  style={{ colorScheme: "dark" }}
-                  onClick={e => e.stopPropagation()}
-                >
-                  {seasons.filter(s => s.season_number > 0).map(s => (
-                    <option key={s.season_number} value={s.season_number} style={{ background: "#161616" }}>
-                      {s.name}
-                    </option>
-                  ))}
-                </select>
-                <svg className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-white/60" width="11" height="11" viewBox="0 0 12 12" fill="none">
-                  <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </div>
-              <button
-                onClick={() => setShowEpisodePanel(false)}
-                className="text-white/40 hover:text-white transition-colors p-1"
-                title="Close episode list"
-              >
-                <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                  <path d="M4 4l10 10M14 4L4 14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
-                </svg>
-              </button>
+        )}
+        
+        {/* Hidden Subtitle File Input - kept outside conditional renders to prevent unmounting during dialog */}
+        <input 
+          ref={fileInputRef}
+          type="file" 
+          accept=".srt,.vtt" 
+          className="hidden" 
+          onChange={handleUploadSubtitle} 
+        />
+        
+        {/* Custom Subtitle Overlay */}
+        {activeSubtitle && (currentTrackIdx !== -1 || useCustomSubtitle) && (
+          <div
+            className="absolute w-full flex justify-center pointer-events-none z-40 px-16"
+            style={{ bottom: `${showControls || !isPlaying ? subtitleBottom : Math.max(20, subtitleBottom - 60)}px` }}
+          >
+            <div
+              className="text-white font-bold text-center whitespace-pre-line"
+              style={{
+                fontSize: `${subtitleFontSize}px`,
+                lineHeight: "1.4",
+                fontFamily: subtitleFont,
+                textShadow: "0 1px 3px rgba(0,0,0,1), 0 2px 6px rgba(0,0,0,1), 0 0 10px rgba(0,0,0,0.8)",
+              }}
+            >
+              {activeSubtitle}
             </div>
+          </div>
+        )}
 
-            {/* Episode Cards */}
-            <div className="px-8 pb-5">
-              {loadingEpisodes ? (
-                <div className="flex gap-4" style={{ scrollbarWidth: "none" }}>
-                  {[1,2,3,4,5,6].map(i => (
-                    <div key={i} className="flex-shrink-0 w-72 space-y-2">
-                      <div className="w-full aspect-video bg-white/5 animate-pulse rounded-xl" />
-                      <div className="h-3 bg-white/5 animate-pulse rounded w-3/4" />
-                    </div>
-                  ))}
+        {/* Top Controls Overlay */}
+        <div 
+          className={`absolute top-0 left-0 w-full p-6 sm:p-8 bg-gradient-to-b from-black/80 to-transparent flex items-start z-10 ${
+            showControls || !isPlaying ? "opacity-100" : "opacity-0 pointer-events-none"
+          }`}
+        >
+          <button 
+            onClick={onClose}
+            className="text-white hover:scale-110 hover:text-[#E50914] transition-all"
+            title="Back"
+          >
+            <ArrowLeft size={32} />
+          </button>
+        </div>
+
+        {/* Episode Panel Overlay (Netflix-style) */}
+        {showEpisodePanel && seasons && seasons.length > 0 && (showControls || !isPlaying) && (
+          <div
+            className="absolute bottom-0 left-0 w-full z-50"
+            style={{ paddingBottom: "88px" }}
+            onClick={e => e.stopPropagation()}
+            onMouseEnter={() => {
+              // Keep controls and panel visible while hovering
+              if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
+              setShowControls(true);
+            }}
+            onMouseLeave={handleUserActivity}
+          >
+            {/* Gradient blend at top */}
+            <div className="absolute top-0 left-0 w-full h-8 bg-gradient-to-b from-transparent to-[#0e0e0e] pointer-events-none -translate-y-full" />
+            <div className="w-full" style={{ background: "#0e0e0e" }}>
+              {/* Header row */}
+              <div className="flex items-center justify-between px-8 pt-5 pb-3">
+                <div className="relative">
+                  <select
+                    value={panelSeason}
+                    onChange={e => setPanelSeason(Number(e.target.value))}
+                    className="appearance-none bg-[#2a2a2a] hover:bg-[#333] border border-[#3a3a3a] text-white text-sm font-bold rounded-lg pl-4 pr-9 py-2 outline-none cursor-pointer"
+                    style={{ colorScheme: "dark" }}
+                    onClick={e => e.stopPropagation()}
+                  >
+                    {seasons.filter(s => s.season_number > 0).map(s => (
+                      <option key={s.season_number} value={s.season_number} style={{ background: "#161616" }}>
+                        {s.name}
+                      </option>
+                    ))}
+                  </select>
+                  <svg className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-white/60" width="11" height="11" viewBox="0 0 12 12" fill="none">
+                    <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
                 </div>
-              ) : (
-                <div
-                  ref={episodeScrollRef}
-                  className="flex gap-4 overflow-x-auto py-3 pl-1"
-                  style={{ scrollbarWidth: "none", msOverflowStyle: "none", cursor: epIsDragging.current ? "grabbing" : "grab" }}
-                  onClick={e => e.stopPropagation()}
-                  onMouseDown={e => {
-                    epIsDragging.current = true;
-                    epIsMoved.current = false;
-                    epStartX.current = e.pageX - (episodeScrollRef.current?.offsetLeft ?? 0);
-                    epScrollLeft.current = episodeScrollRef.current?.scrollLeft ?? 0;
-                  }}
-                  onMouseLeave={() => { epIsDragging.current = false; }}
-                  onMouseUp={() => { epIsDragging.current = false; }}
-                  onMouseMove={e => {
-                    if (!epIsDragging.current || !episodeScrollRef.current) return;
-                    e.preventDefault();
-                    const x = e.pageX - (episodeScrollRef.current.offsetLeft);
-                    const walk = x - epStartX.current;
-                    if (Math.abs(walk) > 5) epIsMoved.current = true;
-                    episodeScrollRef.current.scrollLeft = epScrollLeft.current - walk;
-                  }}
+                <button
+                  onClick={() => setShowEpisodePanel(false)}
+                  className="text-white/40 hover:text-white transition-colors p-1"
+                  title="Close episode list"
                 >
-                  {panelEpisodes.map(ep => {
-                    // If user has selected an episode, that becomes "Now Playing"
-                    // Otherwise fall back to prop values (default S1E1)
-                    const effectiveSeason = selectedEp?.season ?? currentSeason ?? 1;
-                    const effectiveEpisode = selectedEp?.episode ?? currentEpisode ?? 1;
-                    const isNowPlaying = panelSeason === effectiveSeason && ep.episode_number === effectiveEpisode;
-                    const isHighlighted = isNowPlaying;
-                    return (
-                      <div
-                        key={ep.id}
-                        className="flex-shrink-0 w-72 group cursor-pointer select-none"
-                        onClick={e => {
-                          e.stopPropagation();
-                          if (epIsMoved.current) return;
-                          
-                          setSelectedEp({ season: panelSeason, episode: ep.episode_number });
-                          
-                          if (onEpisodeChange) {
-                            onEpisodeChange(panelSeason, ep.episode_number);
-                          }
-                          
-                          // Simulate episode switch by resetting video to start
-                          if (videoRef.current) {
-                            videoRef.current.currentTime = 0;
-                            videoRef.current.play().catch(() => {});
-                            setIsPlaying(true);
-                          }
-                          
-                          // Close panel after selection to give feedback
-                          setTimeout(() => setShowEpisodePanel(false), 400);
-                        }}
-                      >
-                        {/* Thumbnail */}
-                        <div className={`relative w-full aspect-video rounded-xl overflow-hidden mb-2.5 ring-2 ${
-                          isHighlighted ? "ring-white/80" : "ring-transparent group-hover:ring-white/25"
-                        } transition-all`}>
-                          {ep.still_path ? (
-                            <img
-                              src={`https://image.tmdb.org/t/p/w400${ep.still_path}`}
-                              alt={ep.name}
-                              className="w-full h-full object-cover"
-                              draggable={false}
-                            />
-                          ) : (
-                            <div className="w-full h-full bg-[#1a1a1a] flex items-center justify-center">
-                              <svg width="28" height="28" fill="none" viewBox="0 0 24 24">
-                                <circle cx="12" cy="12" r="10" stroke="white" strokeOpacity="0.15" strokeWidth="1.5"/>
-                                <path d="M10 8l6 4-6 4V8z" fill="white" fillOpacity="0.3"/>
-                              </svg>
-                            </div>
-                          )}
-                          {/* Overlay on hover */}
-                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
-                          {/* Top badges */}
-                          <div className="absolute top-2 left-2 flex items-center gap-1.5">
-                            {isNowPlaying && (
-                              <span className="flex items-center gap-1 px-2 py-0.5 bg-[#161616]/90 border border-white/20 text-white/90 text-[10px] font-semibold rounded-md tracking-wide">
-                                <svg width="8" height="8" viewBox="0 0 8 8" fill="currentColor"><path d="M1 1l6 3-6 3V1z"/></svg>
-                                Now Playing
-                              </span>
+                  <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                    <path d="M4 4l10 10M14 4L4 14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+                  </svg>
+                </button>
+              </div>
+
+              {/* Episode Cards */}
+              <div className="px-8 pb-5">
+                {loadingEpisodes ? (
+                  <div className="flex gap-4" style={{ scrollbarWidth: "none" }}>
+                    {[1,2,3,4,5,6].map(i => (
+                      <div key={i} className="flex-shrink-0 w-72 space-y-2">
+                        <div className="w-full aspect-video bg-white/5 animate-pulse rounded-xl" />
+                        <div className="h-3 bg-white/5 animate-pulse rounded w-3/4" />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div
+                    ref={episodeScrollRef}
+                    className="flex gap-4 overflow-x-auto py-3 pl-1"
+                    style={{ scrollbarWidth: "none", msOverflowStyle: "none", cursor: epIsDragging.current ? "grabbing" : "grab" }}
+                    onClick={e => e.stopPropagation()}
+                    onMouseDown={e => {
+                      epIsDragging.current = true;
+                      epIsMoved.current = false;
+                      epStartX.current = e.pageX - (episodeScrollRef.current?.offsetLeft ?? 0);
+                      epScrollLeft.current = episodeScrollRef.current?.scrollLeft ?? 0;
+                    }}
+                    onMouseLeave={() => { epIsDragging.current = false; }}
+                    onMouseUp={() => { epIsDragging.current = false; }}
+                    onMouseMove={e => {
+                      if (!epIsDragging.current || !episodeScrollRef.current) return;
+                      e.preventDefault();
+                      const x = e.pageX - (episodeScrollRef.current.offsetLeft);
+                      const walk = x - epStartX.current;
+                      if (Math.abs(walk) > 5) epIsMoved.current = true;
+                      episodeScrollRef.current.scrollLeft = epScrollLeft.current - walk;
+                    }}
+                  >
+                    {panelEpisodes.map(ep => {
+                      // If user has selected an episode, that becomes "Now Playing"
+                      // Otherwise fall back to prop values (default S1E1)
+                      const effectiveSeason = selectedEp?.season ?? currentSeason ?? 1;
+                      const effectiveEpisode = selectedEp?.episode ?? currentEpisode ?? 1;
+                      const isNowPlaying = panelSeason === effectiveSeason && ep.episode_number === effectiveEpisode;
+                      const isHighlighted = isNowPlaying;
+                      return (
+                        <div
+                          key={ep.id}
+                          className="flex-shrink-0 w-72 group cursor-pointer select-none"
+                          onClick={e => {
+                            e.stopPropagation();
+                            if (epIsMoved.current) return;
+                            
+                            setSelectedEp({ season: panelSeason, episode: ep.episode_number });
+                            
+                            if (onEpisodeChange) {
+                              onEpisodeChange(panelSeason, ep.episode_number);
+                            }
+                            
+                            // Simulate episode switch by resetting video to start
+                            if (videoRef.current) {
+                              videoRef.current.currentTime = 0;
+                              videoRef.current.play().catch(() => {});
+                              setIsPlaying(true);
+                            }
+                            
+                            // Close panel after selection to give feedback
+                            setTimeout(() => setShowEpisodePanel(false), 400);
+                          }}
+                        >
+                          {/* Thumbnail */}
+                          <div className={`relative w-full aspect-video rounded-xl overflow-hidden mb-2.5 ring-2 ${
+                            isHighlighted ? "ring-white/80" : "ring-transparent group-hover:ring-white/25"
+                          } transition-all`}>
+                            {ep.still_path ? (
+                              <img
+                                src={`https://image.tmdb.org/t/p/w400${ep.still_path}`}
+                                alt={ep.name}
+                                className="w-full h-full object-cover"
+                                draggable={false}
+                              />
+                            ) : (
+                              <div className="w-full h-full bg-[#1a1a1a] flex items-center justify-center">
+                                <svg width="28" height="28" fill="none" viewBox="0 0 24 24">
+                                  <circle cx="12" cy="12" r="10" stroke="white" strokeOpacity="0.15" strokeWidth="1.5"/>
+                                  <path d="M10 8l6 4-6 4V8z" fill="white" fillOpacity="0.3"/>
+                                </svg>
+                              </div>
                             )}
-                            {!isNowPlaying && (
-                              <span className="px-2 py-0.5 bg-black/60 text-white/60 text-[10px] font-bold rounded-md">
-                                S{panelSeason}E{ep.episode_number}
-                              </span>
+                            {/* Overlay on hover */}
+                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
+                            {/* Top badges */}
+                            <div className="absolute top-2 left-2 flex items-center gap-1.5">
+                              {isNowPlaying && (
+                                <span className="flex items-center gap-1 px-2 py-0.5 bg-[#161616]/90 border border-white/20 text-white/90 text-[10px] font-semibold rounded-md tracking-wide">
+                                  <svg width="8" height="8" viewBox="0 0 8 8" fill="currentColor"><path d="M1 1l6 3-6 3V1z"/></svg>
+                                  Now Playing
+                                </span>
+                              )}
+                            </div>
+                            {/* Bottom right duration badge */}
+                            {ep.runtime && (
+                              <div className="absolute bottom-2 right-2 px-1.5 py-0.5 bg-black/70 text-white/90 text-[10px] font-medium rounded backdrop-blur-sm">
+                                {ep.runtime}m
+                              </div>
                             )}
                           </div>
-                          {/* Runtime badge */}
-                          {ep.runtime && (
-                            <div className="absolute bottom-2 right-2 px-1.5 py-0.5 bg-black/60 rounded text-[10px] text-white/60 font-medium">
-                              {ep.runtime}m
-                            </div>
-                          )}
+                          {/* Info */}
+                          <div className="px-1">
+                            <h4 className={`text-sm font-bold truncate mb-1 ${isHighlighted ? "text-white" : "text-white/90 group-hover:text-white"}`}>
+                              {ep.name}
+                            </h4>
+                            <p className="text-[11px] text-white/40 line-clamp-2 leading-relaxed">
+                              {ep.overview || "No overview available for this episode."}
+                            </p>
+                          </div>
                         </div>
-                        {/* Episode title */}
-                        <p className={`text-xs font-semibold truncate leading-snug mb-0.5 ${
-                          isHighlighted ? "text-white" : "text-white/60 group-hover:text-white/90"
-                        } transition-colors`}>
-                          {ep.name}
-                        </p>
-                        {ep.overview && (
-                          <p className="text-[11px] text-white/30 leading-relaxed line-clamp-2">
-                            {ep.overview}
-                          </p>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Bottom Controls Overlay */}
       <div 
-        className={`absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/90 via-black/60 to-transparent flex flex-col z-10 ${
-          showControls || !isPlaying ? "opacity-100" : "opacity-0 pointer-events-none"
+        className={`absolute bottom-0 left-0 w-full px-6 pb-6 pt-16 bg-gradient-to-t from-black/90 via-black/40 to-transparent flex flex-col z-20 transition-opacity duration-300 ${
+          showControls || !isPlaying || showSettings || showSubtitlePanel ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
+        onClick={e => e.stopPropagation()}
+        onMouseEnter={() => {
+          if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
+          setShowControls(true);
+        }}
+        onMouseLeave={handleMouseLeavePlayer}
       >
-        {/* Progress Bar (Full Width) */}
+        
+        {/* Progress Bar */}
         <div 
-          ref={progressBarRef}
-          className="relative w-full h-1.5 bg-white/20 cursor-pointer group/progress"
+          className="relative w-full h-1.5 bg-white/20 rounded-full cursor-pointer mb-5 group/progress overflow-visible flex items-center hover:h-2 transition-all"
           onMouseDown={handleProgressMouseDown}
+          ref={progressBarRef}
         >
+          {/* Buffered */}
+          <div className="absolute top-0 left-0 h-full bg-white/40 rounded-full" style={{ width: '0%' }} />
+          {/* Played */}
           <div 
-            className="absolute top-0 left-0 h-full bg-[#E50914] pointer-events-none"
+            className="absolute top-0 left-0 h-full bg-[#E50914] rounded-full"
             style={{ width: `${progress}%` }}
           />
           {/* Thumb */}
@@ -908,7 +914,7 @@ export default function DashPlayer({
         {/* Control Buttons Row */}
         <div className="px-6 py-4 flex items-center justify-between">
           
-          {/* Left: Play/Pause, Skip, Volume */}
+          {/* Left: Play/Pause, Skip, Volume, Duration */}
           <div className="flex items-center gap-6">
             <button onClick={togglePlay} className="text-white hover:scale-110 transition-transform">
               {isPlaying ? <Pause size={32} fill="currentColor" /> : <Play size={32} fill="currentColor" />}
@@ -929,14 +935,15 @@ export default function DashPlayer({
               </svg>
             </button>
 
-          </div>
-
-          {/* Center: Title & Time */}
-          <div className="hidden md:flex flex-col items-center gap-1">
-            <span className="text-white font-semibold text-lg tracking-wide drop-shadow-md">{title}</span>
-            <span className="text-white/70 text-xs font-medium">
+            {/* Duration / Current Time */}
+            <span className="text-white/80 text-sm font-medium ml-2 font-mono">
               {formatTime(currentTime)} / {formatTime(duration)}
             </span>
+          </div>
+
+          {/* Center: Title */}
+          <div className="hidden md:flex flex-col items-center gap-1 absolute left-1/2 -translate-x-1/2 pointer-events-none">
+            <span className="text-white font-semibold text-lg tracking-wide drop-shadow-md">{displayTitle}</span>
           </div>
 
           {/* Right: Settings, Fullscreen */}
