@@ -38,6 +38,7 @@ export function StreamButton({ streamUrl, title, seasons, tmdbId, contentType, c
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
+      document.documentElement.style.overflow = "hidden";
       // Attempt to lock screen orientation to landscape on mobile
       try {
         if (screen.orientation && (screen.orientation as any).lock) {
@@ -50,6 +51,7 @@ export function StreamButton({ streamUrl, title, seasons, tmdbId, contentType, c
       }
     } else {
       document.body.style.overflow = "unset";
+      document.documentElement.style.overflow = "unset";
       // Unlock screen orientation when modal is closed
       try {
         if (screen.orientation && (screen.orientation as any).unlock) {
@@ -60,6 +62,7 @@ export function StreamButton({ streamUrl, title, seasons, tmdbId, contentType, c
     
     return () => {
       document.body.style.overflow = "unset";
+      document.documentElement.style.overflow = "unset";
       try {
         if (screen.orientation && (screen.orientation as any).unlock) {
           (screen.orientation as any).unlock();

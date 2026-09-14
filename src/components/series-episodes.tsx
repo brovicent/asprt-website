@@ -76,10 +76,15 @@ export function SeriesEpisodes({ tmdbId, seasons, streamUrl, title, episodeStrea
     // Lock scroll when player open
     if (playerOpen) {
       document.body.style.overflow = "hidden";
+      document.documentElement.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "unset";
+      document.documentElement.style.overflow = "unset";
     }
-    return () => { document.body.style.overflow = "unset"; };
+    return () => { 
+      document.body.style.overflow = "unset"; 
+      document.documentElement.style.overflow = "unset";
+    };
   }, [playerOpen]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
