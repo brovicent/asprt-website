@@ -848,18 +848,40 @@ export default function DashPlayer({
           if (showSettings) { setShowSettings(false); return; }
           if (showSubtitlePanel) { setShowSubtitlePanel(false); return; }
           
-          if (showControls) {
-            setShowControls(false);
-            if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
+          const isMobileDevice = typeof window !== 'undefined' && (window.innerWidth < 768 || navigator.maxTouchPoints > 0);
+
+          if (isMobileDevice) {
+            if (showControls) {
+              setShowControls(false);
+              if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
+            } else {
+              handleUserActivity();
+            }
           } else {
+            if (isLocked) return;
+            togglePlay();
             handleUserActivity();
           }
         }}
         onDoubleClick={(e) => {
           e.stopPropagation();
           if (isLocked) return;
-          togglePlay();
-          handleUserActivity();
+          
+          const isMobileDevice = typeof window !== 'undefined' && (window.innerWidth < 768 || navigator.maxTouchPoints > 0);
+
+          if (isMobileDevice) {
+            togglePlay();
+            handleUserActivity();
+          } else {
+            // Double click on PC toggles fullscreen (Standard video player behavior)
+            if (containerRef.current) {
+              if (document.fullscreenElement) {
+                document.exitFullscreen().catch(() => {});
+              } else {
+                containerRef.current.requestFullscreen().catch(() => {});
+              }
+            }
+          }
         }}
       >
         <video
