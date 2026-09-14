@@ -793,7 +793,7 @@ export default function DashPlayer({
       {/* Custom Subtitle Overlay - outside video div, anchored to outer container */}
       {activeSubtitle && (currentTrackIdx !== -1 || useCustomSubtitle) && (
         <div
-          className="absolute w-full flex justify-center pointer-events-none z-40 px-16"
+          className="absolute w-full flex justify-center pointer-events-none z-40 px-4 sm:px-16"
           style={{ bottom: `${showControls || !isPlaying ? Math.max(160, subtitleBottom) : Math.max(30, subtitleBottom - 130)}px` }}
         >
           <div
@@ -812,7 +812,7 @@ export default function DashPlayer({
 
       {/* Top Controls Overlay - anchored to outer container */}
       <div 
-        className={`absolute top-0 left-0 w-full p-6 sm:p-8 bg-gradient-to-b from-black/80 to-transparent flex items-start z-10 pointer-events-none ${
+        className={`absolute top-0 left-0 w-full p-4 sm:p-8 bg-gradient-to-b from-black/80 to-transparent flex items-center gap-4 z-10 pointer-events-none ${
           showControls || !isPlaying ? "opacity-100" : "opacity-0"
         }`}
       >
@@ -823,6 +823,17 @@ export default function DashPlayer({
         >
           <ArrowLeft size={32} />
         </button>
+        {/* Mobile Title (hidden on md and above where the bottom title is shown) */}
+        <div className="md:hidden flex flex-col pointer-events-none truncate">
+          {contentType === 'tv_show' && currentEpData ? (
+            <>
+              <span className="text-white font-semibold text-base truncate drop-shadow-md">{currentEpData.name}</span>
+              <span className="text-white/70 font-medium text-xs uppercase truncate drop-shadow-md">{title}</span>
+            </>
+          ) : (
+            <span className="text-white font-semibold text-base truncate drop-shadow-md">{title}</span>
+          )}
+        </div>
       </div>
 
       {/* Episode Panel Overlay (Netflix-style) - anchored to outer container */}
@@ -842,7 +853,7 @@ export default function DashPlayer({
             <div className="absolute top-0 left-0 w-full h-8 bg-gradient-to-b from-transparent to-[#0e0e0e] pointer-events-none -translate-y-full" />
             <div className="w-full" style={{ background: "#0e0e0e" }}>
               {/* Header row */}
-              <div className="flex items-center justify-between px-8 pt-5 pb-3">
+              <div className="flex items-center justify-between px-4 sm:px-8 pt-4 sm:pt-5 pb-2 sm:pb-3">
                 <div className="relative">
                   <select
                     value={panelSeason}
@@ -873,11 +884,11 @@ export default function DashPlayer({
               </div>
 
               {/* Episode Cards */}
-              <div className="px-8 pb-5">
+              <div className="px-4 sm:px-8 pb-5">
                 {loadingEpisodes ? (
-                  <div className="flex gap-4" style={{ scrollbarWidth: "none" }}>
+                  <div className="flex gap-3 sm:gap-4" style={{ scrollbarWidth: "none" }}>
                     {[1,2,3,4,5,6].map(i => (
-                      <div key={i} className="flex-shrink-0 w-72 space-y-2">
+                      <div key={i} className="flex-shrink-0 w-[75vw] sm:w-72 space-y-2">
                         <div className="w-full aspect-video bg-white/5 animate-pulse rounded-xl" />
                         <div className="h-3 bg-white/5 animate-pulse rounded w-3/4" />
                       </div>
@@ -916,7 +927,7 @@ export default function DashPlayer({
                       return (
                         <div
                           key={ep.id}
-                          className="flex-shrink-0 w-72 group cursor-pointer select-none"
+                          className="flex-shrink-0 w-[75vw] sm:w-72 group cursor-pointer select-none"
                           onClick={e => {
                             e.stopPropagation();
                             if (epIsMoved.current) return;
@@ -1001,7 +1012,7 @@ export default function DashPlayer({
 
       {/* Bottom Controls Overlay */}
       <div 
-        className={`absolute bottom-0 left-0 w-full px-6 pb-6 pt-16 bg-gradient-to-t from-black/90 via-black/40 to-transparent flex flex-col z-20 transition-opacity duration-300 ${
+        className={`absolute bottom-0 left-0 w-full px-2 sm:px-6 pb-2 sm:pb-6 pt-8 sm:pt-16 bg-gradient-to-t from-black/90 via-black/40 to-transparent flex flex-col z-20 transition-opacity duration-300 ${
           showControls || !isPlaying || showSettings || showSubtitlePanel ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
         onClick={e => e.stopPropagation()}
@@ -1014,7 +1025,7 @@ export default function DashPlayer({
         
         {/* Progress Bar */}
         <div 
-          className="relative w-full h-1.5 bg-white/20 rounded-full cursor-pointer mb-5 group/progress overflow-visible flex items-center hover:h-2 transition-all"
+          className="relative w-full h-2 sm:h-1.5 bg-white/20 rounded-full cursor-pointer mb-3 sm:mb-5 group/progress overflow-visible flex items-center hover:h-2.5 sm:hover:h-2 transition-all"
           onMouseDown={handleProgressMouseDown}
           ref={progressBarRef}
         >
@@ -1033,10 +1044,10 @@ export default function DashPlayer({
         </div>
 
         {/* Control Buttons Row */}
-        <div className="px-6 py-4 flex items-center justify-between">
+        <div className="px-2 sm:px-6 py-2 sm:py-4 flex items-center justify-between">
           
           {/* Left: Play/Pause, Skip, Volume, Duration */}
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-3 sm:gap-6">
             <button onClick={togglePlay} className="text-white hover:scale-110 transition-transform">
               {isPlaying ? <Pause size={32} fill="currentColor" /> : <Play size={32} fill="currentColor" />}
             </button>
@@ -1087,7 +1098,7 @@ export default function DashPlayer({
               </button>
               
               {/* Vertical Slider Popup */}
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-10 h-32 opacity-0 pointer-events-none group-hover/vol:opacity-100 group-hover/vol:pointer-events-auto transition-all duration-300 translate-y-2 group-hover/vol:translate-y-0 z-50">
+              <div className="hidden md:block absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-10 h-32 opacity-0 pointer-events-none group-hover/vol:opacity-100 group-hover/vol:pointer-events-auto transition-all duration-300 translate-y-2 group-hover/vol:translate-y-0 z-50">
                 {/* Bridge to prevent hover loss */}
                 <div className="absolute -bottom-4 left-0 w-full h-4 bg-transparent" />
                 
@@ -1137,7 +1148,7 @@ export default function DashPlayer({
 
             {/* Settings Menu Popup */}
             {showSettings && (
-              <div className="absolute bottom-16 right-0 w-64 bg-[#161616] border border-[#2a2a2a] rounded-2xl py-4 px-2 shadow-2xl flex flex-col gap-4 z-50 animate-in slide-in-from-bottom-2 duration-200">
+              <div className="absolute bottom-16 -right-2 sm:right-0 w-[calc(100vw-24px)] sm:w-64 max-w-sm bg-[#161616] border border-[#2a2a2a] rounded-2xl py-4 px-2 shadow-2xl flex flex-col gap-4 z-50 animate-in slide-in-from-bottom-2 duration-200">
                 
                 {/* Quality Settings */}
                 {bitrates.length > 0 && (
@@ -1169,7 +1180,7 @@ export default function DashPlayer({
 
             {/* Subtitle Panel Popup */}
             {showSubtitlePanel && (
-              <div className="absolute bottom-16 right-0 w-64 bg-[#161616] border border-[#2a2a2a] rounded-2xl py-4 px-2 shadow-2xl z-50 animate-in slide-in-from-bottom-2 duration-200">
+              <div className="absolute bottom-16 -right-2 sm:right-0 w-[calc(100vw-24px)] sm:w-64 max-w-sm bg-[#161616] border border-[#2a2a2a] rounded-2xl py-4 px-2 shadow-2xl z-50 animate-in slide-in-from-bottom-2 duration-200">
                 
                 {subtitlePanelPage === "main" && (
                   <div className="flex flex-col gap-2">
