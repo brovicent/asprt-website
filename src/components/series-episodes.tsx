@@ -82,21 +82,6 @@ export function SeriesEpisodes({ tmdbId, seasons, streamUrl, title, episodeStrea
     return () => { document.body.style.overflow = "unset"; };
   }, [playerOpen]);
 
-  // Auto-play the episode from URL params on first mount (for reload support)
-  const didAutoPlay = useRef(false);
-  useEffect(() => {
-    if (!mounted || didAutoPlay.current) return;
-    const params = new URLSearchParams(window.location.search);
-    const s = params.get('s');
-    const ep = params.get('ep');
-    const play = params.get('play');
-    if (s && ep && play === 'true') {
-      didAutoPlay.current = true;
-      handlePlayEpisode(Number(s), Number(ep));
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mounted]);
-
   const handleMouseDown = (e: React.MouseEvent) => {
     setIsDragging(true);
     setIsMoved(false);
