@@ -138,6 +138,26 @@ export default function DashPlayer({
     currentSeason && currentEpisode ? { season: currentSeason, episode: currentEpisode } : null
   );
 
+  // Handle Browser Back Button
+  useEffect(() => {
+    window.history.pushState({ playerOpen: true }, "");
+
+    const handlePopState = (e: PopStateEvent) => {
+      if (onClose) {
+        onClose();
+      }
+    };
+
+    window.addEventListener("popstate", handlePopState);
+
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+      if (window.history.state?.playerOpen) {
+        window.history.back();
+      }
+    };
+  }, [onClose]);
+
   const handleTouchStart = (e: React.TouchEvent) => {
     if (isLocked) return;
     if (e.touches.length !== 1) return;
