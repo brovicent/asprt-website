@@ -252,18 +252,20 @@ function NavbarContent({ activeType }: { activeType?: "movie" | "tv_show" } = {}
       >
         <div className="flex flex-col p-6 gap-8 h-full overflow-y-auto">
           {/* Mobile Search */}
-          <form action="/" className="relative w-full md:hidden">
-            <Search size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 z-10 pointer-events-none" />
-            <input
-              type="text"
-              name="search"
-              value={searchQuery}
-              onChange={handleSearchChange}
-              placeholder="Search movies, tv series..."
-              className="w-full px-12 py-4 rounded-2xl text-base font-medium text-white placeholder:text-white/40 bg-white/5 border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#ff0033] transition-all"
-              suppressHydrationWarning
-              autoComplete="off"
-            />
+          <form action="/" className="w-full md:hidden">
+            <div className="relative w-full">
+              <Search size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 z-10 pointer-events-none" />
+              <input
+                type="text"
+                name="search"
+                value={searchQuery}
+                onChange={handleSearchChange}
+                placeholder="Search movies, tv series..."
+                className="w-full px-12 py-4 rounded-2xl text-base font-medium text-white placeholder:text-white/40 bg-white/5 border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#ff0033] transition-all"
+                suppressHydrationWarning
+                autoComplete="off"
+              />
+            </div>
             
             {/* Mobile Search Dropdown */}
             {searchQuery.length >= 2 && (
