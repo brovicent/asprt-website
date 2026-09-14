@@ -516,6 +516,17 @@ export default function DashPlayer({
       }
     });
 
+    player.on(dashjs.MediaPlayer.events.PLAYBACK_NOT_ALLOWED, () => {
+      // Browser blocked autoplay with sound. Fallback to muted autoplay.
+      if (videoRef.current) {
+        videoRef.current.muted = true;
+        videoRef.current.volume = 0;
+        setIsMuted(true);
+        setVolume(0);
+        videoRef.current.play().catch(e => console.warn("Muted autoplay also failed:", e));
+      }
+    });
+
     };
 
     initPlayer();
