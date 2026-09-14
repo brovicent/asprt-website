@@ -65,3 +65,35 @@ export async function getTMDBSeason(imdbId: string, seasonNumber: number) {
     return null;
   }
 }
+
+import { db } from "@/db";
+import { movies } from "@/db/schema";
+import { sql, eq, and, desc } from "drizzle-orm";
+
+export async function searchMoviesLive(query: string) {
+  if (!query || query.length < 2) return [];
+  try {
+    const results = await db
+      .select({
+        id: movies.id,
+        title: movies.title,
+        slug: movies.slug,
+        releaseYear: movies.releaseYear,
+        posterUrl: movies.posterUrl,
+        contentType: movies.contentType,
+      })
+      .from(movies)
+      .where(
+        and(
+          eq(movies.status, "published"),
+          sql`LOWER(${movies.title}) LIKE LOWER(${`%${query}%`})`
+        )
+      )
+      .orderBy(desc(movies.views)) // Order by popularity
+      .limit(5);
+    return results;
+  } catch (e) {
+    console.error("Live search error:", e);
+    return [];
+  }
+}

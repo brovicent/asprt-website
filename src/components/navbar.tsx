@@ -1,9 +1,10 @@
 "use client";
 
-import { Suspense, useState, useEffect } from "react";
+import { Suspense, useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Search, Home, Film, Tv, PlaySquare, Grid, Tags, Users, Globe, Calendar, Radio, Menu, X } from "lucide-react";
+import { searchMoviesLive } from "@/lib/actions";
 
 function NavbarContent({ activeType }: { activeType?: "movie" | "tv_show" } = {}) {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -14,6 +15,37 @@ function NavbarContent({ activeType }: { activeType?: "movie" | "tv_show" } = {}
   const search = searchParams.get("search");
   const genre = searchParams.get("genre");
   const isFiltered = Boolean(type || search || genre);
+
+  const [searchQuery, setSearchQuery] = useState(search || "");
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    setSearchQuery(search || "");
+  }, [search]);
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setSearchQuery(val);
+    
+    if (val.length < 2) {
+      setSearchResults([]);
+      setShowDropdown(false);
+      return;
+    }
+    
+    setIsSearching(true);
+    setShowDropdown(true);
+    
+    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+    debounceTimerRef.current = setTimeout(async () => {
+      const results = await searchMoviesLive(val);
+      setSearchResults(results);
+      setIsSearching(false);
+    }, 300);
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -140,18 +172,63 @@ function NavbarContent({ activeType }: { activeType?: "movie" | "tv_show" } = {}
 
         {/* Right Side: Search & Mobile Menu Button */}
         <div className="flex items-center gap-4">
-          <form action="/" className="relative hidden md:block">
+          <form action="/" className="relative hidden md:block" onBlur={(e) => {
+            // Close dropdown if clicking outside
+            if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+              setShowDropdown(false);
+            }
+          }}>
             <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 z-10 pointer-events-none" />
             <input
               type="text"
               name="search"
-              defaultValue={search || ""}
+              value={searchQuery}
+              onChange={handleSearchChange}
+              onFocus={() => { if (searchQuery.length >= 2) setShowDropdown(true); }}
               placeholder="Search..."
               className={`w-48 xl:w-60 px-10 py-2 rounded-xl text-sm font-medium text-center text-white placeholder:text-white/40 focus:outline-none focus:ring-1 focus:ring-[#ff0033] transition-all relative z-0 bg-transparent border ${
                 isScrolled ? "border-white/10" : "border-white/20"
               }`}
               suppressHydrationWarning
+              autoComplete="off"
             />
+            
+            {/* Search Dropdown */}
+            {showDropdown && searchQuery.length >= 2 && (
+              <div className="absolute top-full left-0 right-0 mt-2 bg-[#0a0a0a] border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50">
+                {isSearching ? (
+                  <div className="p-4 text-center text-white/50 text-sm font-medium">Searching...</div>
+                ) : searchResults.length > 0 ? (
+                  <div className="flex flex-col">
+                    {searchResults.map((res) => (
+                      <Link 
+                        key={res.id} 
+                        href={`/movie/${res.slug}`}
+                        onClick={() => setShowDropdown(false)}
+                        className="flex items-center gap-3 p-3 hover:bg-white/5 transition-colors border-b border-white/5 last:border-0"
+                      >
+                        <div className="w-10 h-14 bg-white/10 rounded overflow-hidden flex-shrink-0">
+                          {res.posterUrl && (
+                            <img src={res.posterUrl} alt={res.title} className="w-full h-full object-cover" />
+                          )}
+                        </div>
+                        <div className="flex flex-col overflow-hidden text-left">
+                          <span className="text-white font-semibold text-sm truncate">{res.title}</span>
+                          <span className="text-white/50 text-xs">
+                            {res.releaseYear} &bull; {res.contentType === "movie" ? "Movie" : "TV Series"}
+                          </span>
+                        </div>
+                      </Link>
+                    ))}
+                    <button type="submit" className="p-3 text-center text-xs font-bold tracking-wide text-[#ff0033] bg-[#ff0033]/5 hover:bg-[#ff0033]/10 transition-colors w-full">
+                      View all results for &quot;{searchQuery}&quot;
+                    </button>
+                  </div>
+                ) : (
+                  <div className="p-4 text-center text-white/50 text-sm font-medium">No results found.</div>
+                )}
+              </div>
+            )}
           </form>
 
           {/* Mobile Menu Toggle */}
@@ -180,11 +257,50 @@ function NavbarContent({ activeType }: { activeType?: "movie" | "tv_show" } = {}
             <input
               type="text"
               name="search"
-              defaultValue={search || ""}
+              value={searchQuery}
+              onChange={handleSearchChange}
               placeholder="Search movies, tv series..."
               className="w-full px-12 py-4 rounded-2xl text-base font-medium text-white placeholder:text-white/40 bg-white/5 border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#ff0033] transition-all"
               suppressHydrationWarning
+              autoComplete="off"
             />
+            
+            {/* Mobile Search Dropdown */}
+            {searchQuery.length >= 2 && (
+              <div className="mt-4 bg-[#0a0a0a] border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
+                {isSearching ? (
+                  <div className="p-4 text-center text-white/50 text-sm font-medium">Searching...</div>
+                ) : searchResults.length > 0 ? (
+                  <div className="flex flex-col">
+                    {searchResults.map((res) => (
+                      <Link 
+                        key={res.id} 
+                        href={`/movie/${res.slug}`}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="flex items-center gap-4 p-4 hover:bg-white/5 transition-colors border-b border-white/5 last:border-0"
+                      >
+                        <div className="w-12 h-16 bg-white/10 rounded-lg overflow-hidden flex-shrink-0">
+                          {res.posterUrl && (
+                            <img src={res.posterUrl} alt={res.title} className="w-full h-full object-cover" />
+                          )}
+                        </div>
+                        <div className="flex flex-col overflow-hidden text-left">
+                          <span className="text-white font-semibold text-base truncate">{res.title}</span>
+                          <span className="text-white/50 text-sm mt-1">
+                            {res.releaseYear} &bull; {res.contentType === "movie" ? "Movie" : "TV Series"}
+                          </span>
+                        </div>
+                      </Link>
+                    ))}
+                    <button type="submit" onClick={() => setIsMobileMenuOpen(false)} className="p-4 text-center text-sm font-bold tracking-wide text-[#ff0033] bg-[#ff0033]/5 hover:bg-[#ff0033]/10 transition-colors w-full">
+                      View all results for &quot;{searchQuery}&quot;
+                    </button>
+                  </div>
+                ) : (
+                  <div className="p-4 text-center text-white/50 text-sm font-medium">No results found.</div>
+                )}
+              </div>
+            )}
           </form>
 
           {/* Mobile Navigation Links */}
