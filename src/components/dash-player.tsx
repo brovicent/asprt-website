@@ -821,17 +821,17 @@ export default function DashPlayer({
           className="text-white hover:scale-110 hover:text-[#E50914] transition-all pointer-events-auto"
           title="Back"
         >
-          <ArrowLeft size={32} />
+          <ArrowLeft className="w-6 h-6 sm:w-8 sm:h-8" />
         </button>
         {/* Mobile Title (hidden on md and above where the bottom title is shown) */}
         <div className="md:hidden flex flex-col pointer-events-none truncate">
           {contentType === 'tv_show' && currentEpData ? (
             <>
-              <span className="text-white font-semibold text-base truncate drop-shadow-md">{currentEpData.name}</span>
-              <span className="text-white/70 font-medium text-xs uppercase truncate drop-shadow-md">{title}</span>
+              <span className="text-white font-semibold text-sm sm:text-base truncate drop-shadow-md">{currentEpData.name}</span>
+              <span className="text-white/70 font-medium text-[10px] sm:text-xs uppercase truncate drop-shadow-md">{title}</span>
             </>
           ) : (
-            <span className="text-white font-semibold text-base truncate drop-shadow-md">{title}</span>
+            <span className="text-white font-semibold text-sm sm:text-base truncate drop-shadow-md">{title}</span>
           )}
         </div>
       </div>
@@ -1047,20 +1047,20 @@ export default function DashPlayer({
         <div className="px-2 sm:px-6 py-2 sm:py-4 flex items-center justify-between">
           
           {/* Left: Play/Pause, Skip, Volume, Duration */}
-          <div className="flex items-center gap-3 sm:gap-6">
+          <div className="flex items-center gap-2 sm:gap-6">
             <button onClick={togglePlay} className="text-white hover:scale-110 transition-transform">
-              {isPlaying ? <Pause size={32} fill="currentColor" /> : <Play size={32} fill="currentColor" />}
+              {isPlaying ? <Pause className="w-6 h-6 sm:w-8 sm:h-8" fill="currentColor" /> : <Play className="w-6 h-6 sm:w-8 sm:h-8" fill="currentColor" />}
             </button>
             
             <button onClick={() => skip(-10)} className="text-white hover:text-white/70 transition-colors" title="Rewind 10s">
-              <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <svg viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 sm:w-[26px] sm:h-[26px]">
                 <path d="M7.5 5.5L4 9l3.5 3.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
                 <path d="M4 9A9 9 0 1 1 4 17" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
                 <text x="13" y="15" textAnchor="middle" fill="currentColor" fontSize="7.5" fontWeight="bold" fontFamily="Arial, sans-serif">10</text>
               </svg>
             </button>
             <button onClick={() => skip(10)} className="text-white hover:text-white/70 transition-colors" title="Forward 10s">
-              <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <svg viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 sm:w-[26px] sm:h-[26px]">
                 <path d="M18.5 5.5L22 9l-3.5 3.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
                 <path d="M22 9A9 9 0 1 0 22 17" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
                 <text x="13" y="15" textAnchor="middle" fill="currentColor" fontSize="7.5" fontWeight="bold" fontFamily="Arial, sans-serif">10</text>
@@ -1068,7 +1068,7 @@ export default function DashPlayer({
             </button>
 
             {/* Duration / Current Time */}
-            <span className="text-white/80 text-sm font-medium ml-2 font-mono">
+            <span className="text-white/80 text-xs sm:text-sm font-medium ml-1 sm:ml-2 font-mono">
               {formatTime(currentTime)} / {formatTime(duration)}
             </span>
           </div>
@@ -1087,14 +1087,14 @@ export default function DashPlayer({
 
           {/* Right: Settings, Fullscreen */}
           <div 
-            className="flex items-center gap-5 relative"
+            className="flex items-center gap-3 sm:gap-5 relative"
             onMouseEnter={handleMenuMouseEnter}
             onMouseLeave={handleMenuMouseLeave}
           >
             {/* Volume Control */}
             <div className="relative flex items-center justify-center group/vol">
               <button onClick={toggleMute} className="text-white hover:text-white/70 transition-colors z-10">
-                {isMuted || volume === 0 ? <VolumeX size={28} /> : <Volume1 size={28} />}
+                {isMuted || volume === 0 ? <VolumeX className="w-5 h-5 sm:w-7 sm:h-7" /> : <Volume1 className="w-5 h-5 sm:w-7 sm:h-7" />}
               </button>
               
               {/* Vertical Slider Popup */}
@@ -1119,7 +1119,7 @@ export default function DashPlayer({
               className={`text-white transition-colors hover:text-white/70 ${showSettings ? "text-[#E50914]" : ""}`}
               title="Settings"
             >
-              <Settings size={28} />
+              <Settings className="w-5 h-5 sm:w-7 sm:h-7" />
             </button>
 
             {/* Episodes Button (TV Series Only) */}
@@ -1129,7 +1129,7 @@ export default function DashPlayer({
                 className={`text-white transition-colors hover:text-white/70 ${showEpisodePanel ? "opacity-100" : "opacity-60"}`}
                 title="Episodes"
               >
-                <LayoutList size={28} />
+                <LayoutList className="w-5 h-5 sm:w-7 sm:h-7" />
               </button>
             )}
 
@@ -1139,11 +1139,11 @@ export default function DashPlayer({
               className={`text-white transition-colors hover:text-white/70 ${currentTrackIdx !== -1 || useCustomSubtitle ? "opacity-100" : "opacity-60"}`}
               title="Subtitles"
             >
-              <Subtitles size={28} />
+              <Subtitles className="w-5 h-5 sm:w-7 sm:h-7" />
             </button>
             
             <button onClick={toggleFullscreen} className="text-white hover:text-white/70 transition-colors" title="Fullscreen">
-              {isFullscreen ? <Minimize size={28} /> : <Maximize size={28} />}
+              {isFullscreen ? <Minimize className="w-5 h-5 sm:w-7 sm:h-7" /> : <Maximize className="w-5 h-5 sm:w-7 sm:h-7" />}
             </button>
 
             {/* Settings Menu Popup */}
