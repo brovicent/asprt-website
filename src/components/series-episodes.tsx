@@ -42,6 +42,7 @@ interface SeriesEpisodesProps {
   tmdbId: string;
   seasons: Season[];
   streamUrl?: string;
+  title?: string;
   episodeStreams?: EpisodeStream[];
   initialSeason?: number;
 }
