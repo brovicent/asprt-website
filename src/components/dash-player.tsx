@@ -714,7 +714,7 @@ export default function DashPlayer({
       ref={containerRef}
       onMouseMove={handleUserActivity}
       onMouseLeave={handleMouseLeavePlayer}
-      className="relative w-full h-full bg-black flex items-center justify-center overflow-hidden font-sans group select-none"
+      className="relative w-full h-full bg-black flex flex-col overflow-hidden font-sans group select-none"
     >
       <style dangerouslySetInnerHTML={{__html: `
         /* Hide native subtitles completely since we render them in React */
@@ -733,12 +733,11 @@ export default function DashPlayer({
         }
       `}} />
       
-      {/* Video Element */}
+      {/* Video Element - fills all remaining space */}
       <div 
-        className="relative flex-1 w-full flex items-center justify-center overflow-hidden bg-black"
+        className="relative flex-1 w-full overflow-hidden bg-black"
         onClick={(e) => {
           e.stopPropagation();
-          // Don't toggle play if episode panel is open — a click there should just close it
           if (showEpisodePanel) {
             setShowEpisodePanel(false);
             return;
@@ -756,7 +755,7 @@ export default function DashPlayer({
           onCanPlay={() => setIsBuffering(false)}
         />
 
-        {/* Volume HUD Overlay - shows when keyboard adjusts volume */}
+        {/* Volume HUD Overlay */}
         {showVolumeHud && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-50">
             <div className="flex flex-col items-center gap-3 bg-black/60 backdrop-blur-sm rounded-2xl px-8 py-5 shadow-2xl">
@@ -765,7 +764,6 @@ export default function DashPlayer({
               ) : (
                 <Volume1 size={40} className="text-white" />
               )}
-              {/* Volume bar */}
               <div className="w-32 h-1.5 bg-white/20 rounded-full overflow-hidden">
                 <div 
                   className="h-full bg-white rounded-full transition-all duration-150"
@@ -781,8 +779,8 @@ export default function DashPlayer({
             <div className="w-16 h-16 border-4 border-white/20 border-t-[#E50914] rounded-full animate-spin"></div>
           </div>
         )}
-        
-        {/* Hidden Subtitle File Input - kept outside conditional renders to prevent unmounting during dialog */}
+
+        {/* Hidden Subtitle File Input */}
         <input 
           ref={fileInputRef}
           type="file" 
@@ -790,44 +788,45 @@ export default function DashPlayer({
           className="hidden" 
           onChange={handleUploadSubtitle} 
         />
-        
-        {/* Custom Subtitle Overlay */}
-        {activeSubtitle && (currentTrackIdx !== -1 || useCustomSubtitle) && (
-          <div
-            className="absolute w-full flex justify-center pointer-events-none z-40 px-16"
-            style={{ bottom: `${showControls || !isPlaying ? Math.max(160, subtitleBottom) : Math.max(30, subtitleBottom - 130)}px` }}
-          >
-            <div
-              className="text-white font-bold text-center whitespace-pre-line"
-              style={{
-                fontSize: `${subtitleFontSize}px`,
-                lineHeight: "1.4",
-                fontFamily: subtitleFont,
-                textShadow: "0 1px 3px rgba(0,0,0,1), 0 2px 6px rgba(0,0,0,1), 0 0 10px rgba(0,0,0,0.8)",
-              }}
-            >
-              {activeSubtitle}
-            </div>
-          </div>
-        )}
+      </div>
 
-        {/* Top Controls Overlay */}
-        <div 
-          className={`absolute top-0 left-0 w-full p-6 sm:p-8 bg-gradient-to-b from-black/80 to-transparent flex items-start z-10 ${
-            showControls || !isPlaying ? "opacity-100" : "opacity-0 pointer-events-none"
-          }`}
+      {/* Custom Subtitle Overlay - outside video div, anchored to outer container */}
+      {activeSubtitle && (currentTrackIdx !== -1 || useCustomSubtitle) && (
+        <div
+          className="absolute w-full flex justify-center pointer-events-none z-40 px-16"
+          style={{ bottom: `${showControls || !isPlaying ? Math.max(160, subtitleBottom) : Math.max(30, subtitleBottom - 130)}px` }}
         >
-          <button 
-            onClick={onClose}
-            className="text-white hover:scale-110 hover:text-[#E50914] transition-all"
-            title="Back"
+          <div
+            className="text-white font-bold text-center whitespace-pre-line"
+            style={{
+              fontSize: `${subtitleFontSize}px`,
+              lineHeight: "1.4",
+              fontFamily: subtitleFont,
+              textShadow: "0 1px 3px rgba(0,0,0,1), 0 2px 6px rgba(0,0,0,1), 0 0 10px rgba(0,0,0,0.8)",
+            }}
           >
-            <ArrowLeft size={32} />
-          </button>
+            {activeSubtitle}
+          </div>
         </div>
+      )}
 
-        {/* Episode Panel Overlay (Netflix-style) */}
-        {showEpisodePanel && seasons && seasons.length > 0 && (showControls || !isPlaying) && (
+      {/* Top Controls Overlay - anchored to outer container */}
+      <div 
+        className={`absolute top-0 left-0 w-full p-6 sm:p-8 bg-gradient-to-b from-black/80 to-transparent flex items-start z-10 pointer-events-none ${
+          showControls || !isPlaying ? "opacity-100" : "opacity-0"
+        }`}
+      >
+        <button 
+          onClick={onClose}
+          className="text-white hover:scale-110 hover:text-[#E50914] transition-all pointer-events-auto"
+          title="Back"
+        >
+          <ArrowLeft size={32} />
+        </button>
+      </div>
+
+      {/* Episode Panel Overlay (Netflix-style) - anchored to outer container */}
+      {showEpisodePanel && seasons && seasons.length > 0 && (showControls || !isPlaying) && (
           <div
             className="absolute bottom-0 left-0 w-full z-50"
             style={{ paddingBottom: "88px" }}
@@ -999,7 +998,6 @@ export default function DashPlayer({
             </div>
           </div>
         )}
-      </div>
 
       {/* Bottom Controls Overlay */}
       <div 
