@@ -48,8 +48,8 @@ function NavbarContent({ activeType }: { activeType?: "movie" | "tv_show" } = {}
     <>
       <header 
         className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-500 ${
-          isScrolled 
-            ? "bg-black/95 backdrop-blur-sm shadow-xl" 
+          isMobileMenuOpen || isScrolled 
+            ? "bg-[#0a0a0a]" 
             : "bg-gradient-to-b from-black/80 via-black/30 to-transparent"
         }`}
       >
@@ -168,7 +168,7 @@ function NavbarContent({ activeType }: { activeType?: "movie" | "tv_show" } = {}
 
     {/* Mobile Menu Overlay */}
       <div 
-        className={`fixed inset-0 bg-black/95 backdrop-blur-xl z-[90] lg:hidden flex flex-col transition-all duration-300 ${
+        className={`fixed inset-0 bg-[#0a0a0a] z-[90] lg:hidden flex flex-col transition-all duration-300 ${
           isMobileMenuOpen ? "opacity-100 visible translate-x-0" : "opacity-0 invisible translate-x-full"
         }`}
         style={{ top: "60px" }} // offset below header
