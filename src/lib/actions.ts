@@ -78,7 +78,7 @@ export async function searchMoviesLive(query: string) {
         id: movies.id,
         title: movies.title,
         slug: movies.slug,
-        releaseYear: movies.releaseYear,
+        releaseYear: movies.year,
         posterUrl: movies.posterUrl,
         contentType: movies.contentType,
       })
