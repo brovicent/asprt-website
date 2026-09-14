@@ -142,6 +142,7 @@ export function SeriesEpisodes({ tmdbId, seasons, streamUrl, title, episodeStrea
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black">
       <div className="relative w-full h-full flex flex-col">
         <DashPlayer
+          key={`${playingSeason}-${playingEpisode}`}
           url={currentUrlToPlay}
           title={title ?? ""}
           onClose={() => setPlayerOpen(false)}
