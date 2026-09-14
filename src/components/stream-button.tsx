@@ -49,18 +49,34 @@ export function StreamButton({ streamUrl, title, seasons, tmdbId, contentType, c
   // Updated to point to the user's local DASH server running on port 8080 (using the fixed manifest)
   const urlToPlay = streamUrl || (mounted ? `/video-stream/manifest_fixed.mpd` : "");
 
+  const [playingSeason, setPlayingSeason] = useState<number>(currentSeason || 1);
+  const [playingEpisode, setPlayingEpisode] = useState<number>(currentEpisode || 1);
+
+  // Update local state if props change
+  useEffect(() => {
+    if (currentSeason) setPlayingSeason(currentSeason);
+    if (currentEpisode) setPlayingEpisode(currentEpisode);
+  }, [currentSeason, currentEpisode]);
+
+  const handleEpisodeChange = (seasonNum: number, epNum: number) => {
+    setPlayingSeason(seasonNum);
+    setPlayingEpisode(epNum);
+  };
+
   const modalContent = isOpen && mounted ? (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black animate-in fade-in duration-200">
       <div className="relative w-full h-full flex flex-col">
         <DashPlayer 
+          key={`${playingSeason}-${playingEpisode}`}
           url={urlToPlay} 
           title={title} 
           onClose={() => setIsOpen(false)}
           seasons={seasons}
           tmdbId={tmdbId}
           contentType={contentType}
-          currentSeason={currentSeason}
-          currentEpisode={currentEpisode}
+          currentSeason={playingSeason}
+          currentEpisode={playingEpisode}
+          onEpisodeChange={handleEpisodeChange}
         />
       </div>
     </div>
