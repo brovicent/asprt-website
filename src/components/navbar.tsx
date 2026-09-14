@@ -45,13 +45,14 @@ function NavbarContent({ activeType }: { activeType?: "movie" | "tv_show" } = {}
   ];
 
   return (
-    <header 
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        isScrolled 
-          ? "bg-black/95 backdrop-blur-sm shadow-xl" 
-          : "bg-gradient-to-b from-black/80 via-black/30 to-transparent"
-      }`}
-    >
+    <>
+      <header 
+        className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-500 ${
+          isScrolled 
+            ? "bg-black/95 backdrop-blur-sm shadow-xl" 
+            : "bg-gradient-to-b from-black/80 via-black/30 to-transparent"
+        }`}
+      >
       <div className="max-w-[1600px] mx-auto flex items-center justify-between px-4 sm:px-8 lg:px-12 xl:px-16 py-4 sm:py-5">
         {/* Left Side: Logo & Navigation */}
         <div className="flex items-center gap-8 lg:gap-12">
@@ -162,11 +163,11 @@ function NavbarContent({ activeType }: { activeType?: "movie" | "tv_show" } = {}
             {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
           </button>
         </div>
-      </div>
+      </header>
 
       {/* Mobile Menu Overlay */}
       <div 
-        className={`fixed inset-0 bg-black/95 backdrop-blur-xl z-40 lg:hidden flex flex-col transition-all duration-300 ${
+        className={`fixed inset-0 bg-black/95 backdrop-blur-xl z-[90] lg:hidden flex flex-col transition-all duration-300 ${
           isMobileMenuOpen ? "opacity-100 visible translate-x-0" : "opacity-0 invisible translate-x-full"
         }`}
         style={{ top: "60px" }} // offset below header
@@ -233,13 +234,13 @@ function NavbarContent({ activeType }: { activeType?: "movie" | "tv_show" } = {}
           </nav>
         </div>
       </div>
-    </header>
+    </>
   );
 }
 
 export function Navbar({ activeType }: { activeType?: "movie" | "tv_show" } = {}) {
   return (
-    <Suspense fallback={<header className="fixed w-full z-50 h-[60px] md:h-[70px] bg-background border-b border-white/10" />}>
+    <Suspense fallback={<header className="fixed w-full z-[100] h-[60px] md:h-[70px] bg-background border-b border-white/10" />}>
       <NavbarContent activeType={activeType} />
     </Suspense>
   );
