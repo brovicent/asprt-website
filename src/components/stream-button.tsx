@@ -33,16 +33,37 @@ export function StreamButton({ streamUrl, title, seasons, tmdbId, contentType, c
     setMounted(true);
   }, []);
 
-  // Lock body scroll when modal is open
+  // Lock body scroll and handle screen orientation when modal is open
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
+      // Attempt to lock screen orientation to landscape on mobile
+      try {
+        if (screen.orientation && screen.orientation.lock) {
+          screen.orientation.lock("landscape").catch((err) => {
+            console.log("Orientation lock failed:", err);
+          });
+        }
+      } catch (e) {
+        console.log("Screen orientation API not supported");
+      }
     } else {
       document.body.style.overflow = "unset";
+      // Unlock screen orientation when modal is closed
+      try {
+        if (screen.orientation && screen.orientation.unlock) {
+          screen.orientation.unlock();
+        }
+      } catch (e) {}
     }
     
     return () => {
       document.body.style.overflow = "unset";
+      try {
+        if (screen.orientation && screen.orientation.unlock) {
+          screen.orientation.unlock();
+        }
+      } catch (e) {}
     };
   }, [isOpen]);
 
@@ -90,7 +111,14 @@ export function StreamButton({ streamUrl, title, seasons, tmdbId, contentType, c
   return (
     <>
       <button
-        onClick={() => setIsOpen(true)}
+        onClick={() => {
+          setIsOpen(true);
+          try {
+            if (screen.orientation && screen.orientation.lock) {
+              screen.orientation.lock("landscape").catch(() => {});
+            }
+          } catch (e) {}
+        }}
         className="flex items-center gap-2 px-6 py-2.5 sm:px-8 sm:py-3 bg-white hover:bg-white/90 text-black rounded-full font-bold text-sm sm:text-base transition-colors shadow-lg cursor-pointer"
       >
         <Play size={20} fill="currentColor" />
