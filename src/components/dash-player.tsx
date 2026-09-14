@@ -117,7 +117,6 @@ export default function DashPlayer({
   const [centerIcon, setCenterIcon] = useState<{ type: "play" | "pause", id: number } | null>(null);
   const centerIconTimer = useRef<NodeJS.Timeout | null>(null);
   const isPlayPending = useRef(false);
-  const [isMutedAutoplay, setIsMutedAutoplay] = useState(false);
 
   const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -473,7 +472,7 @@ export default function DashPlayer({
       if (!isMounted || !videoRef.current) return;
 
       playerRef.current = dashjs.MediaPlayer().create();
-      playerRef.current.initialize(videoRef.current, playerUrl, true);
+      playerRef.current.initialize(videoRef.current, playerUrl, false);
       
       playerRef.current.updateSettings({
         streaming: {
@@ -528,18 +527,6 @@ export default function DashPlayer({
         } else {
           setCurrentBitrateIdx(e.newQuality);
         }
-      }
-    });
-
-    player.on(dashjs.MediaPlayer.events.PLAYBACK_NOT_ALLOWED, () => {
-      // Browser blocked autoplay with sound. Fallback to muted autoplay.
-      if (videoRef.current) {
-        videoRef.current.muted = true;
-        videoRef.current.volume = 0;
-        setIsMuted(true);
-        setVolume(0);
-        setIsMutedAutoplay(true);
-        videoRef.current.play().catch(e => console.warn("Muted autoplay also failed:", e));
       }
     });
 
@@ -916,17 +903,6 @@ export default function DashPlayer({
           if (clickTimeoutRef.current) clearTimeout(clickTimeoutRef.current);
           
           clickTimeoutRef.current = setTimeout(() => {
-            if (isMutedAutoplay && videoRef.current) {
-              // First click should only unmute if we fell back to muted autoplay
-              videoRef.current.muted = false;
-              videoRef.current.volume = 1;
-              setIsMuted(false);
-              setVolume(1);
-              setIsMutedAutoplay(false);
-              handleUserActivity();
-              return;
-            }
-
             const isMobileDevice = typeof window !== 'undefined' && (window.innerWidth < 768 || navigator.maxTouchPoints > 0);
 
             if (isMobileDevice) {
@@ -969,7 +945,6 @@ export default function DashPlayer({
         <video
           ref={videoRef}
           className="w-full h-full object-contain"
-          autoPlay
           onWaiting={() => setIsBuffering(true)}
           onPlaying={() => setIsBuffering(false)}
           onCanPlay={() => setIsBuffering(false)}
@@ -993,14 +968,6 @@ export default function DashPlayer({
           className="absolute inset-0 bg-black pointer-events-none z-10 transition-opacity duration-75"
           style={{ opacity: 1 - brightness }}
         />
-
-        {/* Tap to Unmute Badge */}
-        {isMutedAutoplay && (
-          <div className="absolute top-8 left-1/2 -translate-x-1/2 bg-black/70 backdrop-blur-md border border-white/20 text-white px-6 py-2.5 rounded-full flex items-center gap-3 shadow-2xl pointer-events-none z-40 animate-in slide-in-from-top-4 duration-500">
-            <VolumeX size={18} className="text-[#E50914] animate-pulse" />
-            <span className="font-semibold text-sm tracking-wide">Ketuk layar untuk menghidupkan suara</span>
-          </div>
-        )}
 
         {/* Volume HUD Overlay (Left side) */}
         {showVolumeHud && (
