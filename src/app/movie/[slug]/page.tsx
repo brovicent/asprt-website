@@ -88,7 +88,7 @@ export default async function PublicMoviePage({ params }: { params: Promise<{ sl
         {/* Full-Bleed Hero Section */}
         <div className="relative w-full h-[70vh] sm:h-[85vh] md:h-[90vh] min-h-[500px] flex items-end pb-24 sm:pb-36 group overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-full z-0 pointer-events-none overflow-hidden select-none">
-            <img src={movie.backdropUrl || movie.posterUrl} alt="" className="w-full h-full object-cover opacity-80" />
+            <img src={movie.backdropUrl || movie.posterUrl || undefined} alt="" className="w-full h-full object-cover opacity-80" />
             <div className="absolute inset-0 bg-gradient-to-r from-background via-background/60 to-transparent z-10" />
             <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent z-10" />
           </div>

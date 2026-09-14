@@ -109,6 +109,7 @@ export default function EditMoviePage({
           genres: (movie.genres as string[]) || [],
           language: movie.language || "",
           status: movie.status || "published",
+          streamUrl: "",
         }}
         initialLinks={downloadLinks.map((link) => ({
           id: link.id,

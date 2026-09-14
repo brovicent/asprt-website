@@ -12,7 +12,7 @@ import {
   Trash2,
 } from "lucide-react";
 import Link from "next/link";
-import { getTMDBMovie, getTMDBTvShow } from "@/lib/actions";
+import { getTMDBDetails } from "@/lib/actions";
 import StreamConfigBuilder from "./stream-config-builder";
 import { cn } from "@/lib/utils";
 import { EpisodeStreamManager } from "@/components/episode-stream-manager";
