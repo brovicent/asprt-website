@@ -27,6 +27,8 @@ export default async function PublicMoviePage({ params, searchParams }: { params
   const { slug } = await params;
   const search = await searchParams;
   const autoPlay = search.play === 'true';
+  const currentSeason = search.s ? Number(search.s) : undefined;
+  const currentEpisode = search.ep ? Number(search.ep) : undefined;
   const session = await getSession();
   const isAdmin = session?.role === "admin";
   const statusCondition = isAdmin ? eq(movies.slug, slug) : and(eq(movies.slug, slug), eq(movies.status, "published"));
