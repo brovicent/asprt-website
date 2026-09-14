@@ -114,6 +114,9 @@ export default function DashPlayer({
   const [subtitlePanelPage, setSubtitlePanelPage] = useState<"main" | "appearance">("main");
   const subtitlePanelPageRef = useRef<"main" | "appearance">("main");
 
+  const [centerIcon, setCenterIcon] = useState<{ type: "play" | "pause", id: number } | null>(null);
+  const centerIconTimer = useRef<NodeJS.Timeout | null>(null);
+
   const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const menuTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -597,11 +600,21 @@ export default function DashPlayer({
     };
   }, []);
 
+  const triggerCenterIcon = (type: "play" | "pause") => {
+    setCenterIcon({ type, id: Date.now() });
+    if (centerIconTimer.current) clearTimeout(centerIconTimer.current);
+    centerIconTimer.current = setTimeout(() => {
+      setCenterIcon(null);
+    }, 500);
+  };
+
   const togglePlay = () => {
     if (videoRef.current?.paused) {
       videoRef.current.play();
+      triggerCenterIcon("play");
     } else {
       videoRef.current?.pause();
+      triggerCenterIcon("pause");
     }
   };
 
@@ -837,6 +850,14 @@ export default function DashPlayer({
           display: none !important;
           opacity: 0 !important;
         }
+        @keyframes centerIconAnim {
+          0% { transform: scale(0.8); opacity: 0; }
+          20% { transform: scale(1); opacity: 1; }
+          100% { transform: scale(1.5); opacity: 0; }
+        }
+        .animate-center-icon {
+          animation: centerIconAnim 0.5s ease-out forwards;
+        }
       `}} />
       
       {/* Video Element - fills all remaining space */}
@@ -901,6 +922,19 @@ export default function DashPlayer({
           onPlaying={() => setIsBuffering(false)}
           onCanPlay={() => setIsBuffering(false)}
         />
+
+        {/* Center Play/Pause Icon Animation */}
+        {centerIcon && (
+          <div key={centerIcon.id} className="absolute inset-0 flex items-center justify-center pointer-events-none z-40">
+            <div className="bg-black/40 backdrop-blur-md rounded-full p-4 sm:p-6 animate-center-icon">
+              {centerIcon.type === "play" ? (
+                <Play className="w-12 h-12 sm:w-16 sm:h-16 text-white fill-white" />
+              ) : (
+                <Pause className="w-12 h-12 sm:w-16 sm:h-16 text-white fill-white" />
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Brightness Overlay (Simulated via black overlay with opacity) */}
         <div 
