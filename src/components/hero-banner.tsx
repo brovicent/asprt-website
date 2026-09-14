@@ -67,11 +67,11 @@ export function HeroBanner({ movies, logos = [] }: { movies: any[], logos?: (str
                   <img 
                     src={logoUrl} 
                     alt={m.title} 
-                    className="max-h-24 sm:max-h-32 md:max-h-40 w-auto object-contain mb-6 drop-shadow-2xl" 
+                    className="max-h-16 sm:max-h-24 md:max-h-32 lg:max-h-40 w-auto object-contain mb-6 drop-shadow-2xl" 
                     loading={idx === 0 ? "eager" : "lazy"}
                   />
                 ) : (
-                  <h1 className="text-4xl sm:text-5xl md:text-7xl font-black text-white tracking-tighter drop-shadow-xl mb-4">
+                  <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-white tracking-tighter drop-shadow-xl mb-4">
                     {m.title}
                   </h1>
                 )}
@@ -89,7 +89,7 @@ export function HeroBanner({ movies, logos = [] }: { movies: any[], logos?: (str
                 </div>
 
                 {m.description && (
-                  <p className="text-sm sm:text-base md:text-lg text-white/80 drop-shadow-md line-clamp-3 mb-6 max-w-xl font-medium leading-relaxed">
+                  <p className="text-xs sm:text-sm md:text-base text-white/80 drop-shadow-md line-clamp-3 mb-6 max-w-xl font-medium leading-relaxed">
                     {m.description}
                   </p>
                 )}

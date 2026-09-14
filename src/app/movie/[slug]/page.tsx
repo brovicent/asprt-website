@@ -99,9 +99,9 @@ export default async function PublicMoviePage({ params }: { params: Promise<{ sl
               {/* Title & Info */}
               <div className="absolute bottom-16 sm:bottom-20 left-0 w-full flex flex-col gap-4 sm:gap-6 z-10">
                 {tmdbLogo ? (
-                  <img src={tmdbLogo} alt={movie.title} className="max-h-24 sm:max-h-32 md:max-h-40 w-auto object-contain drop-shadow-2xl origin-left" />
+                  <img src={tmdbLogo} alt={movie.title} className="max-h-16 sm:max-h-24 md:max-h-32 lg:max-h-40 w-auto object-contain drop-shadow-2xl origin-left" />
                 ) : (
-                  <h1 className="text-5xl sm:text-6xl md:text-7xl font-black text-white tracking-tighter drop-shadow-xl">
+                  <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-white tracking-tighter drop-shadow-xl">
                     {movie.title}
                   </h1>
                 )}
@@ -126,7 +126,7 @@ export default async function PublicMoviePage({ params }: { params: Promise<{ sl
                 )}
 
                 {movie.description && (
-                  <p className="text-sm sm:text-base md:text-lg text-white/80 drop-shadow-md line-clamp-3 max-w-xl font-medium leading-relaxed">
+                  <p className="text-xs sm:text-sm md:text-base text-white/80 drop-shadow-md line-clamp-3 max-w-xl font-medium leading-relaxed">
                     {movie.description}
                   </p>
                 )}
