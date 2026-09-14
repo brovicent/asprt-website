@@ -697,14 +697,15 @@ export default function DashPlayer({
     }
   };
 
-  // Append episode to URL query param
+  // Update URL with current season + episode so reload restores position
   useEffect(() => {
-    if (contentType === 'tv_show' && currentEpisode) {
-      const epStr = String(currentEpisode).padStart(2, '0');
-      // Use query param for safety, matching the requested format '-episode-XX'
-      window.history.replaceState(null, '', `${window.location.pathname}?v=episode-${epStr}`);
+    if (contentType === 'tv_show' && currentSeason && currentEpisode) {
+      window.history.replaceState(
+        null, '',
+        `${window.location.pathname}?s=${currentSeason}&ep=${currentEpisode}`
+      );
     }
-  }, [currentEpisode, contentType]);
+  }, [currentSeason, currentEpisode, contentType]);
 
   const currentEpData = panelEpisodes.find(ep => ep.episode_number === (selectedEp?.episode ?? currentEpisode));
 
