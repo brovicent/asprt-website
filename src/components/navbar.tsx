@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Search, Home, Film, Tv, PlaySquare, Grid, Tags, Users, Globe, Calendar, Radio } from "lucide-react";
 
-export function Navbar({ activeType }: { activeType?: "movie" | "tv_show" } = {}) {
+function NavbarContent({ activeType }: { activeType?: "movie" | "tv_show" } = {}) {
   const [isScrolled, setIsScrolled] = useState(false);
   const searchParams = useSearchParams();
   
@@ -143,5 +143,13 @@ export function Navbar({ activeType }: { activeType?: "movie" | "tv_show" } = {}
         </div>
       </div>
     </header>
+  );
+}
+
+export function Navbar({ activeType }: { activeType?: "movie" | "tv_show" } = {}) {
+  return (
+    <Suspense fallback={<header className="fixed w-full z-50 h-[60px] md:h-[70px] bg-background border-b border-white/10" />}>
+      <NavbarContent activeType={activeType} />
+    </Suspense>
   );
 }
