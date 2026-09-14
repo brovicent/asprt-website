@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { getTMDBSeason } from "@/lib/actions";
 import { ChevronDown, Play } from "lucide-react";
 import dynamic from "next/dynamic";
+import { useRouter, usePathname } from "next/navigation";
 
 const DashPlayer = dynamic(() => import("./dash-player"), {
   ssr: false,
@@ -48,6 +49,9 @@ interface SeriesEpisodesProps {
 }
 
 export function SeriesEpisodes({ tmdbId, seasons, streamUrl, title, episodeStreams = [], initialSeason }: SeriesEpisodesProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+  
   const validSeasons = seasons.filter(s => s.season_number > 0);
   const [selectedSeason, setSelectedSeason] = useState<number>(initialSeason || (validSeasons.length > 0 ? validSeasons[0].season_number : 1));
   const [episodes, setEpisodes] = useState<Episode[]>([]);
@@ -139,6 +143,14 @@ export function SeriesEpisodes({ tmdbId, seasons, streamUrl, title, episodeStrea
     setPlayingSeason(seasonNum);
     setPlayingEpisode(epNum);
     
+    // Sync URL with currently playing episode without reloading page
+    if (mounted) {
+      const params = new URLSearchParams(window.location.search);
+      params.set('s', seasonNum.toString());
+      params.set('ep', epNum.toString());
+      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    }
+    
     // Find if we have a specific stream URL configured for this episode
     const specificStream = episodeStreams.find(s => s.seasonNumber === seasonNum && s.episodeNumber === epNum);
     
@@ -185,7 +197,16 @@ export function SeriesEpisodes({ tmdbId, seasons, streamUrl, title, episodeStrea
         <div className="relative">
           <select
             value={selectedSeason}
-            onChange={(e) => setSelectedSeason(Number(e.target.value))}
+            onChange={(e) => {
+              const newSeason = Number(e.target.value);
+              setSelectedSeason(newSeason);
+              // Update URL to reflect the new season
+              if (mounted) {
+                const params = new URLSearchParams(window.location.search);
+                params.set('s', newSeason.toString());
+                router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+              }
+            }}
             className="appearance-none bg-white/10 hover:bg-white/20 border border-white/20 text-white text-sm font-semibold rounded-lg pl-4 pr-10 py-2 outline-none transition-colors cursor-pointer"
           >
             {seasons.map(s => (
