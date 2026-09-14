@@ -77,13 +77,19 @@ export function SeriesEpisodes({ tmdbId, seasons, streamUrl, title, episodeStrea
     if (playerOpen) {
       document.body.style.overflow = "hidden";
       document.documentElement.style.overflow = "hidden";
+      document.body.classList.add("scrollbar-hide");
+      document.documentElement.classList.add("scrollbar-hide");
     } else {
       document.body.style.overflow = "unset";
       document.documentElement.style.overflow = "unset";
+      document.body.classList.remove("scrollbar-hide");
+      document.documentElement.classList.remove("scrollbar-hide");
     }
     return () => { 
       document.body.style.overflow = "unset"; 
       document.documentElement.style.overflow = "unset";
+      document.body.classList.remove("scrollbar-hide");
+      document.documentElement.classList.remove("scrollbar-hide");
     };
   }, [playerOpen]);
 
