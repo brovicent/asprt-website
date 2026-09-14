@@ -33,7 +33,7 @@ export default async function HomePage({
     conditions.push(eq(movies.contentType, type));
   }
   if (search) {
-    conditions.push(like(movies.title, `%${search}%`));
+    conditions.push(sql`LOWER(${movies.title}) LIKE LOWER(${`%${search}%`})`);
   }
   if (genre) {
     conditions.push(sql`JSON_CONTAINS(${movies.genres}, ${JSON.stringify(genre)})`);
