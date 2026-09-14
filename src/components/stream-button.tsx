@@ -39,8 +39,8 @@ export function StreamButton({ streamUrl, title, seasons, tmdbId, contentType, c
       document.body.style.overflow = "hidden";
       // Attempt to lock screen orientation to landscape on mobile
       try {
-        if (screen.orientation && screen.orientation.lock) {
-          screen.orientation.lock("landscape").catch((err) => {
+        if (screen.orientation && (screen.orientation as any).lock) {
+          (screen.orientation as any).lock("landscape").catch((err: any) => {
             console.log("Orientation lock failed:", err);
           });
         }
@@ -51,8 +51,8 @@ export function StreamButton({ streamUrl, title, seasons, tmdbId, contentType, c
       document.body.style.overflow = "unset";
       // Unlock screen orientation when modal is closed
       try {
-        if (screen.orientation && screen.orientation.unlock) {
-          screen.orientation.unlock();
+        if (screen.orientation && (screen.orientation as any).unlock) {
+          (screen.orientation as any).unlock();
         }
       } catch (e) {}
     }
@@ -60,8 +60,8 @@ export function StreamButton({ streamUrl, title, seasons, tmdbId, contentType, c
     return () => {
       document.body.style.overflow = "unset";
       try {
-        if (screen.orientation && screen.orientation.unlock) {
-          screen.orientation.unlock();
+        if (screen.orientation && (screen.orientation as any).unlock) {
+          (screen.orientation as any).unlock();
         }
       } catch (e) {}
     };
@@ -114,8 +114,8 @@ export function StreamButton({ streamUrl, title, seasons, tmdbId, contentType, c
         onClick={() => {
           setIsOpen(true);
           try {
-            if (screen.orientation && screen.orientation.lock) {
-              screen.orientation.lock("landscape").catch(() => {});
+            if (screen.orientation && (screen.orientation as any).lock) {
+              (screen.orientation as any).lock("landscape").catch(() => {});
             }
           } catch (e) {}
         }}
