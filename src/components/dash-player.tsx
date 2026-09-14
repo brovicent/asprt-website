@@ -572,6 +572,15 @@ export default function DashPlayer({
     }
   };
 
+  const adjustVolume = (delta: number) => {
+    if (!videoRef.current) return;
+    const newVol = Math.min(1, Math.max(0, videoRef.current.volume + delta));
+    videoRef.current.volume = newVol;
+    videoRef.current.muted = newVol === 0;
+    setVolume(newVol);
+    setIsMuted(newVol === 0);
+  };
+
   const formatTime = (time: number) => {
     if (isNaN(time)) return "00:00";
     const m = Math.floor(time / 60).toString().padStart(2, "0");
@@ -589,6 +598,58 @@ export default function DashPlayer({
       // Don't close episode panel automatically — user may be browsing it
     }, 3000);
   };
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't intercept if user is typing in an input/textarea
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+
+      switch (e.key) {
+        case ' ':
+        case 'k':
+          e.preventDefault();
+          togglePlay();
+          handleUserActivity();
+          break;
+        case 'ArrowRight':
+          e.preventDefault();
+          skip(10);
+          handleUserActivity();
+          break;
+        case 'ArrowLeft':
+          e.preventDefault();
+          skip(-10);
+          handleUserActivity();
+          break;
+        case 'ArrowUp':
+          e.preventDefault();
+          adjustVolume(0.1);
+          handleUserActivity();
+          break;
+        case 'ArrowDown':
+          e.preventDefault();
+          adjustVolume(-0.1);
+          handleUserActivity();
+          break;
+        case 'f':
+        case 'F':
+          e.preventDefault();
+          toggleFullscreen();
+          break;
+        case 'Escape':
+          if (!document.fullscreenElement) {
+            // Let parent handle escape if not fullscreen
+          }
+          break;
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isPlaying, volume, duration]);
 
   const handleMouseLeavePlayer = () => {
     if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
@@ -645,9 +706,7 @@ export default function DashPlayer({
     <div 
       ref={containerRef}
       onMouseMove={handleUserActivity}
-      onClickCapture={handleUserActivity}
       onMouseLeave={handleMouseLeavePlayer}
-      onClick={() => { if (showEpisodePanel) setShowEpisodePanel(false); }}
       className="relative w-full h-full bg-black flex items-center justify-center overflow-hidden font-sans group select-none"
     >
       <style dangerouslySetInnerHTML={{__html: `
@@ -668,12 +727,23 @@ export default function DashPlayer({
       `}} />
       
       {/* Video Element */}
-      <div className="relative flex-1 w-full flex items-center justify-center overflow-hidden bg-black" onClick={togglePlay}>
+      <div 
+        className="relative flex-1 w-full flex items-center justify-center overflow-hidden bg-black"
+        onClick={(e) => {
+          e.stopPropagation();
+          // Don't toggle play if episode panel is open — a click there should just close it
+          if (showEpisodePanel) {
+            setShowEpisodePanel(false);
+            return;
+          }
+          togglePlay();
+          handleUserActivity();
+        }}
+      >
         <video
           ref={videoRef}
           className="w-full h-full object-contain"
           autoPlay
-          onClick={togglePlay}
           onWaiting={() => setIsBuffering(true)}
           onPlaying={() => setIsBuffering(false)}
           onCanPlay={() => setIsBuffering(false)}
