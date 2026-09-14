@@ -112,6 +112,9 @@ export default function DashPlayer({
   const [subtitleFont, setSubtitleFont] = useState("Arial, sans-serif");
   const [showSubtitlePanel, setShowSubtitlePanel] = useState(false);
   const [subtitlePanelPage, setSubtitlePanelPage] = useState<"main" | "appearance">("main");
+  const subtitlePanelPageRef = useRef<"main" | "appearance">("main");
+
+  const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const menuTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const volumeHudTimer = useRef<NodeJS.Timeout | null>(null);
@@ -848,24 +851,30 @@ export default function DashPlayer({
           if (showSettings) { setShowSettings(false); return; }
           if (showSubtitlePanel) { setShowSubtitlePanel(false); return; }
           
-          const isMobileDevice = typeof window !== 'undefined' && (window.innerWidth < 768 || navigator.maxTouchPoints > 0);
+          if (clickTimeoutRef.current) clearTimeout(clickTimeoutRef.current);
+          
+          clickTimeoutRef.current = setTimeout(() => {
+            const isMobileDevice = typeof window !== 'undefined' && (window.innerWidth < 768 || navigator.maxTouchPoints > 0);
 
-          if (isMobileDevice) {
-            if (showControls) {
-              setShowControls(false);
-              if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
+            if (isMobileDevice) {
+              if (showControls) {
+                setShowControls(false);
+                if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
+              } else {
+                handleUserActivity();
+              }
             } else {
+              if (isLocked) return;
+              togglePlay();
               handleUserActivity();
             }
-          } else {
-            if (isLocked) return;
-            togglePlay();
-            handleUserActivity();
-          }
+          }, 250);
         }}
         onDoubleClick={(e) => {
           e.stopPropagation();
           if (isLocked) return;
+          
+          if (clickTimeoutRef.current) clearTimeout(clickTimeoutRef.current);
           
           const isMobileDevice = typeof window !== 'undefined' && (window.innerWidth < 768 || navigator.maxTouchPoints > 0);
 
