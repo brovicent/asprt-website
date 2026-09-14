@@ -80,12 +80,12 @@ function NavbarContent({ activeType }: { activeType?: "movie" | "tv_show" } = {}
                   <div key={item.id} className="group/genre relative h-full flex items-center">
                     <button
                       className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[14px] font-semibold tracking-wide whitespace-nowrap transition-all duration-300 ${
-                        isActive || genre 
+                        isActive || (genre && !type)
                           ? "bg-[#ff0033]/10 text-[#ff0033]" 
                           : "text-white/80 hover:text-white hover:bg-white/5"
                       }`}
                     >
-                      <Icon size={16} strokeWidth={isActive || genre ? 2.5 : 2} className={isActive || genre ? "text-[#ff0033]" : "text-white/60"} />
+                      <Icon size={16} strokeWidth={isActive || (genre && !type) ? 2.5 : 2} className={isActive || (genre && !type) ? "text-[#ff0033]" : "text-white/60"} />
                       {item.label}
                     </button>
                     
@@ -104,7 +104,7 @@ function NavbarContent({ activeType }: { activeType?: "movie" | "tv_show" } = {}
                           {genresList.map(g => (
                             <Link
                               key={g}
-                              href={`/?genre=${encodeURIComponent(g)}`}
+                              href={`/?${type ? `type=${type}&` : ""}genre=${encodeURIComponent(g)}`}
                               className="group/link flex items-center text-[15px] font-medium text-white/60 hover:text-white transition-all w-fit"
                             >
                               <div className="relative">
@@ -204,7 +204,7 @@ function NavbarContent({ activeType }: { activeType?: "movie" | "tv_show" } = {}
                       {["Action", "Comedy", "Drama", "Horror", "Romance", "Sci-Fi", "Thriller"].map(g => (
                         <Link
                           key={g}
-                          href={`/?genre=${encodeURIComponent(g)}`}
+                          href={`/?${type ? `type=${type}&` : ""}genre=${encodeURIComponent(g)}`}
                           onClick={() => setIsMobileMenuOpen(false)}
                           className="text-sm font-medium text-white/60 hover:text-white py-2"
                         >

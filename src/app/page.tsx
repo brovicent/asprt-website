@@ -15,18 +15,18 @@ export const dynamic = "force-dynamic";
 export default async function HomePage({
   searchParams,
 }: {
-  searchParams: Promise<{ type?: string; search?: string; page?: string; genre?: string }>;
+  searchParams: Promise<{ type?: string; search?: string; page?: string; genre?: string; sort?: string }>;
 }) {
   const params = await searchParams;
-  const { type, search, genre } = params;
+  const { type, search, genre, sort } = params;
   
   const page = parseInt(params.page || "1", 10);
   const limit = 30;
   const offset = (page - 1) * limit;
 
-  const isSearchOrGenre = Boolean(search || genre);
-  const isCategoryPage = Boolean((type === "movie" || type === "tv_show") && !isSearchOrGenre);
-  const isHome = !type && !search && !genre;
+  const isGridView = Boolean(search || genre || sort);
+  const isCategoryPage = Boolean((type === "movie" || type === "tv_show") && !isGridView);
+  const isHome = !type && !search && !genre && !sort;
 
   const conditions: SQL[] = [eq(movies.status, "published")];
   if (type === "movie" || type === "tv_show") {
@@ -49,13 +49,14 @@ export default async function HomePage({
   let actionList: Movie[] = [];
   let dramaList: Movie[] = [];
 
-  if (isSearchOrGenre) {
+  if (isGridView) {
+    const orderByClause = sort === "trending" ? desc(movies.views) : desc(movies.createdAt);
     const [filteredResults, totalCountRes] = await Promise.all([
       db
         .select()
         .from(movies)
         .where(and(...conditions))
-        .orderBy(desc(movies.createdAt))
+        .orderBy(orderByClause)
         .limit(limit)
         .offset(offset),
       db.select({ value: count() }).from(movies).where(and(...conditions)),
@@ -111,13 +112,14 @@ export default async function HomePage({
     seriesList = recentSeries;
   }
 
-  const totalPages = isSearchOrGenre ? Math.ceil(totalItems / limit) : 0;
+  const totalPages = isGridView ? Math.ceil(totalItems / limit) : 0;
 
   const getPageUrl = (p: number) => {
     const sp = new URLSearchParams();
     if (type) sp.set("type", type);
     if (search) sp.set("search", search);
     if (genre) sp.set("genre", genre);
+    if (sort) sp.set("sort", sort);
     if (p > 1) sp.set("page", p.toString());
     return `/?${sp.toString()}`;
   };
@@ -146,7 +148,7 @@ export default async function HomePage({
           <HeroBanner movies={heroMovies} logos={heroLogos} />
         )}
 
-        {isSearchOrGenre ? (
+        {isGridView ? (
           /* ============ FILTERED / SEARCH VIEW (GRID) ============ */
           <div className="max-w-[1400px] mx-auto px-4 lg:px-12 xl:px-16 pt-24 pb-12">
             <div className="flex items-center justify-between mb-8">
@@ -154,7 +156,11 @@ export default async function HomePage({
                 {search ? (
                   <>Search results for &ldquo;{search}&rdquo;</>
                 ) : genre ? (
-                  <>{genre.toUpperCase()} Movies & Series</>
+                  <>{genre.toUpperCase()} {type === 'movie' ? 'Movies' : type === 'tv_show' ? 'TV Series' : 'Movies & Series'}</>
+                ) : sort === 'trending' ? (
+                  <>Trending {type === 'movie' ? 'Movies' : type === 'tv_show' ? 'TV Series' : 'Now'}</>
+                ) : sort === 'latest' ? (
+                  <>New Releases</>
                 ) : (
                   <>Explore</>
                 )}
@@ -225,8 +231,8 @@ export default async function HomePage({
           /* ============ CATEGORY VIEW (ROWS) ============ */
           <div className="pb-12">
             <div className="-mt-8 sm:-mt-16 relative z-20">
-              <MovieRow title={`Trending ${type === 'movie' ? 'Movies' : 'TV Series'}`} movies={trending} viewAllLink={`/?type=${type}`} />
-              <MovieRow title="New Releases" movies={filmList} viewAllLink={`/?type=${type}`} />
+              <MovieRow title={`Trending ${type === 'movie' ? 'Movies' : 'TV Series'}`} movies={trending} viewAllLink={`/?type=${type}&sort=trending`} />
+              <MovieRow title="New Releases" movies={filmList} viewAllLink={`/?type=${type}&sort=latest`} />
               {actionList.length > 0 && <MovieRow title="Action & Adventure" movies={actionList} viewAllLink={`/?type=${type}&genre=Action`} />}
               {dramaList.length > 0 && <MovieRow title="Drama" movies={dramaList} viewAllLink={`/?type=${type}&genre=Drama`} />}
             </div>
@@ -235,8 +241,8 @@ export default async function HomePage({
           /* ============ HOME VIEW (ROWS) ============ */
           <div className="pb-12">
             <div className="-mt-8 sm:-mt-16 relative z-20">
-              <MovieRow title="Trending Now" movies={trending} />
-              <MovieRow title="New Releases" movies={filmList} viewAllLink="/?type=movie" />
+              <MovieRow title="Trending Now" movies={trending} viewAllLink="/?sort=trending" />
+              <MovieRow title="New Releases" movies={filmList} viewAllLink="/?sort=latest" />
               <MovieRow title="TV Series" movies={seriesList} viewAllLink="/?type=tv_show" />
             </div>
           </div>
