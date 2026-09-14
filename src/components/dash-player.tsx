@@ -140,11 +140,16 @@ export default function DashPlayer({
 
   // Handle Browser Back Button
   useEffect(() => {
-    window.history.pushState({ playerOpen: true }, "");
+    // Use a hash to prevent Next.js from resetting the page state on popstate
+    const url = new URL(window.location.href);
+    url.hash = "player";
+    window.history.pushState(window.history.state, "", url.toString());
 
     const handlePopState = (e: PopStateEvent) => {
-      if (onClose) {
-        onClose();
+      if (window.location.hash !== "#player") {
+        if (onClose) {
+          onClose();
+        }
       }
     };
 
@@ -152,7 +157,7 @@ export default function DashPlayer({
 
     return () => {
       window.removeEventListener("popstate", handlePopState);
-      if (window.history.state?.playerOpen) {
+      if (window.location.hash === "#player") {
         window.history.back();
       }
     };
