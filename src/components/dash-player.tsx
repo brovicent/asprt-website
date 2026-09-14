@@ -146,6 +146,20 @@ export default function DashPlayer({
     currentSeason && currentEpisode ? { season: currentSeason, episode: currentEpisode } : null
   );
 
+  // Hide scrollbar whenever the player is mounted (even on autoplay/reload)
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+    document.body.classList.add("scrollbar-hide");
+    document.documentElement.classList.add("scrollbar-hide");
+    return () => {
+      document.body.style.overflow = "unset";
+      document.documentElement.style.overflow = "unset";
+      document.body.classList.remove("scrollbar-hide");
+      document.documentElement.classList.remove("scrollbar-hide");
+    };
+  }, []);
+
   // Handle Browser Back Button
   useEffect(() => {
     // Use a hash to prevent Next.js from resetting the page state on popstate
