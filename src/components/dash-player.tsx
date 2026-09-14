@@ -104,7 +104,7 @@ export default function DashPlayer({
 
   // Subtitle appearance settings
   const [subtitleFontSize, setSubtitleFontSize] = useState(44);
-  const [subtitleBottom, setSubtitleBottom] = useState(110);
+  const [subtitleBottom, setSubtitleBottom] = useState(160);
   const [subtitleDelay, setSubtitleDelay] = useState(0);
   const [subtitleFont, setSubtitleFont] = useState("Arial, sans-serif");
   const [showSubtitlePanel, setShowSubtitlePanel] = useState(false);
@@ -794,7 +794,7 @@ export default function DashPlayer({
         {activeSubtitle && (currentTrackIdx !== -1 || useCustomSubtitle) && (
           <div
             className="absolute w-full flex justify-center pointer-events-none z-40 px-16"
-            style={{ bottom: `${showControls || !isPlaying ? subtitleBottom : Math.max(20, subtitleBottom - 60)}px` }}
+            style={{ bottom: `${showControls || !isPlaying ? Math.max(160, subtitleBottom) : Math.max(30, subtitleBottom - 130)}px` }}
           >
             <div
               className="text-white font-bold text-center whitespace-pre-line"
