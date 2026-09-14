@@ -225,10 +225,10 @@ export default async function HomePage({
           /* ============ CATEGORY VIEW (ROWS) ============ */
           <div className="pb-12">
             <div className="-mt-8 sm:-mt-16 relative z-20">
-              <MovieRow title={`Trending ${type === 'movie' ? 'Movies' : 'TV Series'}`} movies={trending} />
-              <MovieRow title="New Releases" movies={filmList} />
-              {actionList.length > 0 && <MovieRow title="Action & Adventure" movies={actionList} />}
-              {dramaList.length > 0 && <MovieRow title="Drama" movies={dramaList} />}
+              <MovieRow title={`Trending ${type === 'movie' ? 'Movies' : 'TV Series'}`} movies={trending} viewAllLink={`/?type=${type}`} />
+              <MovieRow title="New Releases" movies={filmList} viewAllLink={`/?type=${type}`} />
+              {actionList.length > 0 && <MovieRow title="Action & Adventure" movies={actionList} viewAllLink={`/?type=${type}&genre=Action`} />}
+              {dramaList.length > 0 && <MovieRow title="Drama" movies={dramaList} viewAllLink={`/?type=${type}&genre=Drama`} />}
             </div>
           </div>
         ) : (
@@ -236,8 +236,8 @@ export default async function HomePage({
           <div className="pb-12">
             <div className="-mt-8 sm:-mt-16 relative z-20">
               <MovieRow title="Trending Now" movies={trending} />
-              <MovieRow title="New Releases" movies={filmList} />
-              <MovieRow title="TV Series" movies={seriesList} />
+              <MovieRow title="New Releases" movies={filmList} viewAllLink="/?type=movie" />
+              <MovieRow title="TV Series" movies={seriesList} viewAllLink="/?type=tv_show" />
             </div>
           </div>
         )}
