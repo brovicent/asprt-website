@@ -760,10 +760,11 @@ export default function DashPlayer({
   };
 
   const formatTime = (time: number) => {
-    if (isNaN(time)) return "00:00";
-    const m = Math.floor(time / 60).toString().padStart(2, "0");
+    if (isNaN(time)) return "00:00:00";
+    const h = Math.floor(time / 3600);
+    const m = Math.floor((time % 3600) / 60).toString().padStart(2, "0");
     const s = Math.floor(time % 60).toString().padStart(2, "0");
-    return `${m}:${s}`;
+    return `${h.toString().padStart(2, "0")}:${m}:${s}`;
   };
 
   const handleUserActivity = () => {
@@ -1204,7 +1205,11 @@ export default function DashPlayer({
                       return (
                         <div
                           key={ep.id}
-                          className="flex-shrink-0 w-[75vw] sm:w-72 group cursor-pointer select-none"
+                          className={`flex-shrink-0 cursor-pointer select-none transition-all duration-300 ${
+                            isHighlighted
+                              ? "w-[85vw] sm:w-80 scale-[1.04] origin-bottom"
+                              : "w-[75vw] sm:w-72 group"
+                          }`}
                           onClick={e => {
                             e.stopPropagation();
                             if (epIsMoved.current) return;

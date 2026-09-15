@@ -166,8 +166,11 @@ export function ContinueWatchingRow() {
                     <div className="w-full h-full bg-white/5" />
                   )}
                   {/* Bottom progress bar */}
-                  <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-white/20">
-                    <div className="h-full bg-primary transition-all" style={{ width: `${pct}%` }} />
+                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20">
+                    <div
+                      className="h-full bg-primary transition-all shadow-[0_0_4px_rgba(229,9,20,0.8)]"
+                      style={{ width: `${pct}%` }}
+                    />
                   </div>
                 </div>
 
