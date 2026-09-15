@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, Play, Plus, Info } from "lucide-react";
+import { ChevronLeft, ChevronRight, Clock } from "lucide-react";
 import { getAllProgress, PlaybackProgress } from "@/lib/progress";
 import { getMoviesByTmdbIds } from "@/lib/actions";
 import { optimizeImageUrl } from "@/lib/utils";
@@ -12,15 +12,15 @@ interface WatchedItem {
   progress: PlaybackProgress;
   season?: number;
   episode?: number;
-  episodeName?: string;
 }
 
-// Format: "23 of 54m"
-function formatProgress(currentTime: number, duration: number) {
-  const currentMin = Math.floor(currentTime / 60);
-  const totalMin = Math.floor(duration / 60);
-  if (totalMin <= 0) return "";
-  return `${currentMin} of ${totalMin}m`;
+function formatTimeLeft(currentTime: number, duration: number) {
+  const leftSeconds = duration - currentTime;
+  if (leftSeconds <= 0) return "Finished";
+  const hours = Math.floor(leftSeconds / 3600);
+  const minutes = Math.floor((leftSeconds % 3600) / 60);
+  if (hours > 0) return `${hours}hr ${minutes}m left`;
+  return `${minutes}m left`;
 }
 
 export function ContinueWatchingRow() {
@@ -53,7 +53,6 @@ export function ContinueWatchingRow() {
         const itemMap = new Map<string, { p: PlaybackProgress; season?: number; episode?: number }>();
 
         progressEntries.forEach(([key, p]) => {
-          // Key format: "tmdb-12345|movie" or "tmdb-12345|tv|1|3"
           const parts = key.split("|");
           const imdbId = parts[0];
           if (!uniqueImdbIds.has(imdbId)) {
@@ -71,12 +70,7 @@ export function ContinueWatchingRow() {
           if (m.imdbId) {
             const data = itemMap.get(m.imdbId);
             if (data) {
-              watchedItems.push({
-                movie: m,
-                progress: data.p,
-                season: data.season,
-                episode: data.episode,
-              });
+              watchedItems.push({ movie: m, progress: data.p, season: data.season, episode: data.episode });
             }
           }
         });
@@ -89,14 +83,15 @@ export function ContinueWatchingRow() {
         setLoading(false);
       }
     }
-
     loadContinueWatching();
   }, []);
 
   const scroll = (direction: "left" | "right") => {
     if (scrollRef.current) {
-      const scrollAmount = scrollRef.current.clientWidth * 0.8;
-      scrollRef.current.scrollBy({ left: direction === "left" ? -scrollAmount : scrollAmount, behavior: "smooth" });
+      scrollRef.current.scrollBy({
+        left: direction === "left" ? -(scrollRef.current.clientWidth * 0.8) : scrollRef.current.clientWidth * 0.8,
+        behavior: "smooth",
+      });
     }
   };
 
@@ -125,7 +120,7 @@ export function ContinueWatchingRow() {
   if (loading || items.length === 0) return null;
 
   return (
-    <section className="mb-8 relative group">
+    <section className="mb-10 relative group">
       <div className="px-4 lg:px-12 xl:px-16 mb-4 mt-6">
         <h2 className="text-xl sm:text-2xl font-semibold text-white">Continue Watching</h2>
       </div>
@@ -133,15 +128,15 @@ export function ContinueWatchingRow() {
       <div className="relative">
         <button
           onClick={() => scroll("left")}
-          className="absolute left-0 top-0 bottom-0 z-20 w-16 bg-gradient-to-r from-background to-transparent hidden md:flex opacity-0 group-hover:opacity-100 items-center justify-start pl-3 text-white transition-opacity focus:outline-none"
+          className="absolute left-0 top-0 bottom-6 z-20 w-16 bg-gradient-to-r from-background to-transparent hidden md:flex opacity-0 group-hover:opacity-100 items-center justify-start pl-3 text-white transition-opacity focus:outline-none"
         >
-          <ChevronLeft size={36} className="drop-shadow-lg" />
+          <ChevronLeft size={36} />
         </button>
         <button
           onClick={() => scroll("right")}
-          className="absolute right-0 top-0 bottom-0 z-20 w-16 bg-gradient-to-l from-background to-transparent hidden md:flex opacity-0 group-hover:opacity-100 items-center justify-end pr-3 text-white transition-opacity focus:outline-none"
+          className="absolute right-0 top-0 bottom-6 z-20 w-16 bg-gradient-to-l from-background to-transparent hidden md:flex opacity-0 group-hover:opacity-100 items-center justify-end pr-3 text-white transition-opacity focus:outline-none"
         >
-          <ChevronRight size={36} className="drop-shadow-lg" />
+          <ChevronRight size={36} />
         </button>
 
         <div
@@ -151,12 +146,12 @@ export function ContinueWatchingRow() {
           onMouseUp={handleMouseUp}
           onMouseMove={handleMouseMove}
           onClickCapture={handleClick}
-          className={`flex overflow-x-auto gap-3 px-4 lg:px-12 xl:px-16 py-2 ${isDragging ? "cursor-grabbing" : "cursor-grab"} scrollbar-hide`}
+          className={`flex overflow-x-auto gap-4 px-4 lg:px-12 xl:px-16 py-2 ${isDragging ? "cursor-grabbing" : "cursor-grab"} scrollbar-hide`}
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
           {items.map(({ movie, progress, season, episode }) => {
             const pct = Math.min((progress.currentTime / progress.duration) * 100, 100);
-            const progressText = formatProgress(progress.currentTime, progress.duration);
+            const timeLeft = formatTimeLeft(progress.currentTime, progress.duration);
 
             const resumeUrl = new URL(window.location.origin + `/movie/${movie.slug}`);
             if (movie.contentType === "tv_show" && season && episode) {
@@ -165,88 +160,50 @@ export function ContinueWatchingRow() {
             }
             resumeUrl.searchParams.set("play", "true");
 
-            const infoUrl = `/movie/${movie.slug}`;
-
             return (
-              <div
+              <Link
                 key={movie.id}
-                className="shrink-0 w-[260px] sm:w-[300px] group/cw select-none rounded-xl overflow-hidden bg-[#1c1c1c] shadow-2xl border border-white/5 hover:border-white/20 transition-all duration-300"
+                href={resumeUrl.pathname + resumeUrl.search}
+                draggable={false}
+                className="shrink-0 w-[240px] sm:w-[280px] group/cw block select-none"
               >
-                {/* Image */}
-                <div className="relative aspect-video overflow-hidden">
+                {/* Image with progress bar */}
+                <div className="relative aspect-video rounded-xl overflow-hidden bg-white/5 mb-2.5 ring-1 ring-white/10 group-hover/cw:ring-white/40 transition-all duration-300">
                   {movie.backdropUrl || movie.posterUrl ? (
                     <img
                       src={optimizeImageUrl(movie.backdropUrl || movie.posterUrl, "w780")}
                       alt={movie.title}
                       loading="lazy"
                       draggable={false}
-                      className="w-full h-full object-cover pointer-events-none transition-transform duration-500 group-hover/cw:scale-105"
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover/cw:scale-105 pointer-events-none"
                     />
                   ) : (
                     <div className="w-full h-full bg-white/5" />
                   )}
-                  {/* Gradient bottom overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#1c1c1c] via-transparent to-transparent pointer-events-none" />
+
+                  {/* Bottom progress bar on image */}
+                  <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-white/20">
+                    <div className="h-full bg-primary transition-all" style={{ width: `${pct}%` }} />
+                  </div>
                 </div>
 
-                {/* Card Bottom Section */}
-                <div className="px-3 pt-2.5 pb-3 bg-[#1c1c1c]">
-                  {/* Buttons Row */}
-                  <div className="flex items-center justify-between mb-2.5">
-                    <div className="flex items-center gap-2">
-                      {/* Play Button */}
-                      <Link
-                        href={resumeUrl.pathname + resumeUrl.search}
-                        draggable={false}
-                        onClick={(e) => isMoved && (e.preventDefault(), e.stopPropagation())}
-                        className="w-9 h-9 rounded-full bg-white flex items-center justify-center hover:bg-white/85 transition-colors shadow-lg shrink-0"
-                        title="Resume"
-                      >
-                        <Play size={15} fill="black" className="text-black ml-0.5" />
-                      </Link>
-
-                      {/* Add to List Button */}
-                      <button
-                        className="w-9 h-9 rounded-full bg-[#2a2a2a] border border-white/30 flex items-center justify-center hover:border-white/70 transition-colors shrink-0"
-                        title="Add to My List"
-                        onClick={(e) => e.preventDefault()}
-                      >
-                        <Plus size={16} className="text-white" />
-                      </button>
-                    </div>
-
-                    {/* Info Button */}
-                    <Link
-                      href={infoUrl}
-                      draggable={false}
-                      onClick={(e) => isMoved && (e.preventDefault(), e.stopPropagation())}
-                      className="w-9 h-9 rounded-full bg-[#2a2a2a] border border-white/30 flex items-center justify-center hover:border-white/70 transition-colors shrink-0"
-                      title="More Info"
-                    >
-                      <Info size={16} className="text-white" />
-                    </Link>
-                  </div>
-
-                  {/* Episode label for TV */}
-                  {movie.contentType === "tv_show" && season && episode && (
-                    <p className="text-white text-[12px] font-medium mb-2 truncate">
-                      S{season}:E{episode}
-                    </p>
-                  )}
-
-                  {/* Progress Bar + Time */}
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1 h-[3px] bg-white/20 rounded-full overflow-hidden">
-                      <div className="h-full bg-primary rounded-full" style={{ width: `${pct}%` }} />
-                    </div>
-                    {progressText && (
-                      <span className="text-[11px] text-white/50 font-medium shrink-0 whitespace-nowrap">
-                        {progressText}
-                      </span>
+                {/* Title + Meta */}
+                <div className="px-0.5">
+                  <h3 className="text-sm font-bold text-white truncate mb-1 group-hover/cw:text-white/80 transition-colors">
+                    {movie.title}
+                  </h3>
+                  <div className="flex items-center gap-1.5 text-xs text-white/50 font-medium">
+                    {movie.contentType === "tv_show" && season && episode && (
+                      <>
+                        <span>S{season}:E{episode}</span>
+                        <span className="text-white/25">·</span>
+                      </>
                     )}
+                    <Clock size={11} className="shrink-0" />
+                    <span>{timeLeft}</span>
                   </div>
                 </div>
-              </div>
+              </Link>
             );
           })}
         </div>
