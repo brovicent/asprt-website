@@ -1205,10 +1205,10 @@ export default function DashPlayer({
                       return (
                         <div
                           key={ep.id}
-                          className={`flex-shrink-0 cursor-pointer select-none transition-all duration-300 ${
+                          className={`flex-shrink-0 cursor-pointer select-none transition-all duration-300 ease-out ${
                             isHighlighted
-                              ? "w-[85vw] sm:w-80 scale-[1.04] origin-bottom"
-                              : "w-[75vw] sm:w-72 group"
+                              ? "w-[82vw] sm:w-[340px] opacity-100"
+                              : "w-[68vw] sm:w-[248px] opacity-60 hover:opacity-90 group"
                           }`}
                           onClick={e => {
                             e.stopPropagation();
@@ -1237,9 +1237,11 @@ export default function DashPlayer({
                           }}
                         >
                           {/* Thumbnail */}
-                          <div className={`relative w-full aspect-video rounded-xl overflow-hidden mb-2.5 ring-2 ${
-                            isHighlighted ? "ring-white/80" : "ring-transparent group-hover:ring-white/25"
-                          } transition-all`}>
+                          <div className={`relative w-full aspect-video rounded-xl overflow-hidden mb-2.5 transition-all duration-300 ${
+                            isHighlighted
+                              ? "ring-[3px] ring-white shadow-[0_0_20px_rgba(255,255,255,0.25)]"
+                              : "ring-1 ring-white/10 group-hover:ring-white/40"
+                          }`}>
                             {ep.still_path ? (
                               <img
                                 src={`https://image.tmdb.org/t/p/w400${ep.still_path}`}
