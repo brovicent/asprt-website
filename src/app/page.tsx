@@ -7,6 +7,7 @@ import { Search, Download, Settings } from "lucide-react";
 import { PosterCard } from "@/components/poster-card";
 import { HeroBanner } from "@/components/hero-banner";
 import { MovieRow } from "@/components/movie-row";
+import { ContinueWatchingRow } from "@/components/continue-watching-row";
 import { Navbar } from "@/components/navbar";
 import { getTMDBLogo } from "@/lib/actions";
 
@@ -231,6 +232,7 @@ export default async function HomePage({
           /* ============ CATEGORY VIEW (ROWS) ============ */
           <div className="pb-12">
             <div className="-mt-8 sm:-mt-16 relative z-20">
+              <ContinueWatchingRow />
               <MovieRow title={`Trending ${type === 'movie' ? 'Movies' : 'TV Series'}`} movies={trending} viewAllLink={`/?type=${type}&sort=trending`} />
               <MovieRow title="New Releases" movies={filmList} viewAllLink={`/?type=${type}&sort=latest`} />
               {actionList.length > 0 && <MovieRow title="Action & Adventure" movies={actionList} viewAllLink={`/?type=${type}&genre=Action`} />}
@@ -241,6 +243,7 @@ export default async function HomePage({
           /* ============ HOME VIEW (ROWS) ============ */
           <div className="pb-12">
             <div className="-mt-8 sm:-mt-16 relative z-20">
+              <ContinueWatchingRow />
               <MovieRow title="Trending Now" movies={trending} viewAllLink="/?sort=trending" />
               <MovieRow title="New Releases" movies={filmList} viewAllLink="/?sort=latest" />
               <MovieRow title="TV Series" movies={seriesList} viewAllLink="/?type=tv_show" />

@@ -68,7 +68,7 @@ export async function getTMDBSeason(imdbId: string, seasonNumber: number) {
 
 import { db } from "@/db";
 import { movies } from "@/db/schema";
-import { sql, eq, and, desc } from "drizzle-orm";
+import { sql, eq, and, desc, inArray } from "drizzle-orm";
 
 export async function searchMoviesLive(query: string) {
   if (!query || query.length < 2) return [];
@@ -94,6 +94,25 @@ export async function searchMoviesLive(query: string) {
     return results;
   } catch (e) {
     console.error("Live search error:", e);
+    return [];
+  }
+}
+
+export async function getMoviesByTmdbIds(tmdbIds: string[]) {
+  if (!tmdbIds || tmdbIds.length === 0) return [];
+  const formattedIds = tmdbIds.map(id => `tmdb-${id}`);
+  
+  try {
+    const results = await db
+      .select()
+      .from(movies)
+      .where(and(
+        eq(movies.status, "published"),
+        inArray(movies.imdbId, formattedIds)
+      ));
+    return results;
+  } catch (e) {
+    console.error("Error fetching movies by TMDB IDs:", e);
     return [];
   }
 }
