@@ -1096,7 +1096,7 @@ export default function DashPlayer({
       >
         <button 
           onClick={onClose}
-          className="text-white hover:scale-110 hover:text-[#E50914] transition-all pointer-events-auto"
+          className="text-white hover:scale-110 hover:text-white/70 transition-all pointer-events-auto"
           title="Back"
         >
           <ArrowLeft className="w-6 h-6 sm:w-8 sm:h-8" />
