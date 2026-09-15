@@ -1207,8 +1207,8 @@ export default function DashPlayer({
                           key={ep.id}
                           className={`flex-shrink-0 cursor-pointer select-none transition-all duration-500 ease-out hover:scale-[1.08] hover:z-10 hover:opacity-100 ${
                             isHighlighted
-                              ? "w-[82vw] sm:w-[340px] opacity-100 scale-100 z-10"
-                              : "w-[68vw] sm:w-[248px] opacity-60 group"
+                              ? "w-[72vw] sm:w-[280px] opacity-100 scale-100 z-10"
+                              : "w-[64vw] sm:w-[248px] opacity-60 group"
                           }`}
                           onClick={e => {
                             e.stopPropagation();
@@ -1259,7 +1259,7 @@ export default function DashPlayer({
                             )}
                             {/* Overlay on hover */}
                             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
-                            {/* Top badges */}
+                            {/* Top-left: Now Playing badge */}
                             <div className="absolute top-2 left-2 flex items-center gap-1.5">
                               {isNowPlaying && (
                                 <span className="flex items-center gap-1 px-2 py-0.5 bg-[#161616]/90 border border-white/20 text-white/90 text-[10px] font-semibold rounded-md tracking-wide">
@@ -1268,7 +1268,11 @@ export default function DashPlayer({
                                 </span>
                               )}
                             </div>
-                            {/* Bottom right duration badge */}
+                            {/* Top-right: Episode number badge */}
+                            <div className="absolute top-2 right-2 px-1.5 py-0.5 bg-black/70 text-white/80 text-[10px] font-bold rounded backdrop-blur-sm tracking-wide">
+                              E{ep.episode_number.toString().padStart(2, "0")}
+                            </div>
+                            {/* Bottom-right: duration badge */}
                             {ep.runtime && (
                               <div className="absolute bottom-2 right-2 px-1.5 py-0.5 bg-black/70 text-white/90 text-[10px] font-medium rounded backdrop-blur-sm">
                                 {ep.runtime}m
