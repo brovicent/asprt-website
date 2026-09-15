@@ -152,7 +152,7 @@ export default async function PublicMoviePage({ params, searchParams }: { params
                 {movie.trailerKey && (
                   <TrailerButton
                     movie={{
-                      id: movie.id, title: movie.title, slug: movie.slug, posterUrl: movie.posterUrl,
+                      id: movie.id, title: movie.title, slug: movie.slug, posterUrl: movie.posterUrl, imdbId: movie.imdbId ?? null,
                       year: movie.year ?? null, rating: movie.rating ?? null, contentType: movie.contentType,
                       duration: movie.duration ?? null, trailerKey: movie.trailerKey, description: movie.description ?? null, genres,
                     }}
