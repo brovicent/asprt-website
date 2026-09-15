@@ -142,7 +142,7 @@ export default async function PublicMoviePage({ params, searchParams }: { params
                   streamUrl={movie.streamUrl ?? null} 
                   title={movie.title}
                   seasons={movie.contentType === "tv_show" ? (tmdbDetails?.seasons ?? undefined) : undefined}
-                  tmdbId={movie.contentType === "tv_show" ? (movie.imdbId ?? undefined) : undefined}
+                  tmdbId={movie.imdbId ?? undefined}
                   contentType={movie.contentType}
                   episodeStreams={movie.contentType === "tv_show" ? epStreams : undefined}
                   autoPlay={autoPlay}

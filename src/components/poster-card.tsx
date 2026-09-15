@@ -28,7 +28,9 @@ export function PosterCard({ movie }: { movie: PosterData }) {
   useEffect(() => {
     if (movie.imdbId) {
       const allProgress = getAllProgress();
-      const prefix = `${movie.imdbId}_${movie.contentType}`;
+      // New key format: "tmdb-12345|movie" or "tmdb-12345|tv|1|1"
+      // Use imdbId as the first segment before the pipe
+      const prefix = `${movie.imdbId}|`;
       
       let highestProgress = 0;
       for (const key in allProgress) {

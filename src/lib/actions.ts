@@ -98,9 +98,8 @@ export async function searchMoviesLive(query: string) {
   }
 }
 
-export async function getMoviesByTmdbIds(tmdbIds: string[]) {
-  if (!tmdbIds || tmdbIds.length === 0) return [];
-  const formattedIds = tmdbIds.map(id => `tmdb-${id}`);
+export async function getMoviesByTmdbIds(imdbIds: string[]) {
+  if (!imdbIds || imdbIds.length === 0) return [];
   
   try {
     const results = await db
@@ -108,7 +107,7 @@ export async function getMoviesByTmdbIds(tmdbIds: string[]) {
       .from(movies)
       .where(and(
         eq(movies.status, "published"),
-        inArray(movies.imdbId, formattedIds)
+        inArray(movies.imdbId, imdbIds)
       ));
     return results;
   } catch (e) {

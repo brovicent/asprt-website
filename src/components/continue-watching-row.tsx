@@ -59,9 +59,9 @@ export function ContinueWatchingRow() {
         const itemMap = new Map<string, { p: PlaybackProgress, season?: number, episode?: number }>();
 
         progressEntries.forEach(([key, p]) => {
-          const parts = key.split("_");
-          const tmdbId = parts[0];
-          // We only take the most recently watched episode per series
+          // Key format: "tmdb-12345|movie" or "tmdb-12345|tv|1|3"
+          const parts = key.split("|");
+          const tmdbId = parts[0]; // full imdbId like "tmdb-12345"
           if (!uniqueTmdbIds.has(tmdbId)) {
             uniqueTmdbIds.add(tmdbId);
             const season = parts.length > 2 ? parseInt(parts[2]) : undefined;
@@ -70,13 +70,14 @@ export function ContinueWatchingRow() {
           }
         });
 
+        // Pass the full imdbId (e.g. "tmdb-12345") and look up WITHOUT re-prefixing
         const movies = await getMoviesByTmdbIds(Array.from(uniqueTmdbIds));
         
         const watchedItems: WatchedItem[] = [];
         movies.forEach(m => {
           if (m.imdbId) {
-            const rawId = m.imdbId.replace("tmdb-", "");
-            const data = itemMap.get(rawId);
+            // The stored key uses the full imdbId as the first part
+            const data = itemMap.get(m.imdbId);
             if (data) {
               watchedItems.push({
                 movie: m,

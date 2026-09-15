@@ -11,16 +11,18 @@ export interface ProgressStorage {
 const STORAGE_KEY = "asprt_playback_progress";
 
 // Generate a unique key for the media item
+// Uses '|' as separator to avoid ambiguity with '_' in tmdbId or contentType
 export const getProgressKey = (
   tmdbId: string,
   contentType: string,
   season?: number,
   episode?: number
 ) => {
-  if (contentType === "tv") {
-    return `${tmdbId}_${contentType}_${season || 1}_${episode || 1}`;
+  const type = contentType === "tv_show" || contentType === "tv" ? "tv" : "movie";
+  if (type === "tv" && season && episode) {
+    return `${tmdbId}|${type}|${season}|${episode}`;
   }
-  return `${tmdbId}_${contentType}`;
+  return `${tmdbId}|${type}`;
 };
 
 export const saveProgress = (
