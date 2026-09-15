@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
-import { Play, ChevronLeft, ChevronRight, Star } from "lucide-react";
+import { Play, Star } from "lucide-react";
 import { optimizeImageUrl } from "@/lib/utils";
 
 export function HeroBanner({ movies, logos = [] }: { movies: any[], logos?: (string | null)[] }) {
@@ -40,8 +40,40 @@ export function HeroBanner({ movies, logos = [] }: { movies: any[], logos?: (str
   const goPrev = () => goToSlide((currentIndex - 1 + movies.length) % movies.length);
   const goNext = () => goToSlide((currentIndex + 1) % movies.length);
 
+  const dragStartX = useRef(0);
+  const dragEndX = useRef(0);
+  const isDragging = useRef(false);
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    isDragging.current = true;
+    dragStartX.current = e.clientX;
+    dragEndX.current = e.clientX;
+  };
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!isDragging.current) return;
+    dragEndX.current = e.clientX;
+  };
+
+  const handlePointerUp = () => {
+    if (!isDragging.current) return;
+    isDragging.current = false;
+    const distance = dragStartX.current - dragEndX.current;
+    if (distance > 50) {
+      goNext();
+    } else if (distance < -50) {
+      goPrev();
+    }
+  };
+
   return (
-    <div className="relative w-full h-[60vh] sm:h-[75vh] md:h-[90vh] min-h-[450px] flex items-end pb-24 sm:pb-36 group overflow-hidden">
+    <div 
+      className={`relative w-full h-[60vh] sm:h-[75vh] md:h-[90vh] min-h-[450px] flex items-end pb-24 sm:pb-36 group overflow-hidden touch-pan-y ${isDragging.current ? 'cursor-grabbing' : 'cursor-grab'}`}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+      onPointerLeave={handlePointerUp}
+    >
       
       {/* Background Images with Crossfade */}
       {movies.map((m, idx) => (
@@ -65,23 +97,7 @@ export function HeroBanner({ movies, logos = [] }: { movies: any[], logos?: (str
         </div>
       ))}
 
-      {/* Prev Arrow */}
-      <button
-        onClick={goPrev}
-        aria-label="Previous"
-        className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 z-30 bg-black/40 hover:bg-black/70 backdrop-blur-md text-white p-2 sm:p-3 rounded-full transition-all duration-200 opacity-0 group-hover:opacity-100 hover:scale-110 shadow-lg"
-      >
-        <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
-      </button>
 
-      {/* Next Arrow */}
-      <button
-        onClick={goNext}
-        aria-label="Next"
-        className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 z-30 bg-black/40 hover:bg-black/70 backdrop-blur-md text-white p-2 sm:p-3 rounded-full transition-all duration-200 opacity-0 group-hover:opacity-100 hover:scale-110 shadow-lg"
-      >
-        <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
-      </button>
 
       {/* Content */}
       <div className="relative z-10 w-full px-4 lg:px-12 xl:px-16 h-full flex items-end">
