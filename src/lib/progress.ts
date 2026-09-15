@@ -89,3 +89,40 @@ export const getAllProgress = (): ProgressStorage => {
     return {};
   }
 };
+
+// ── Movie Metadata Cache ──────────────────────────────────────────────────────
+// Stores minimal movie info in localStorage so Continue Watching can render
+// instantly without a server round-trip.
+
+const MOVIE_META_KEY = "asprt_movie_meta";
+
+export interface CachedMovieMeta {
+  title: string;
+  slug: string;
+  backdropUrl: string | null;
+  posterUrl: string | null;
+  contentType: string;
+  imdbId: string;
+}
+
+export const saveMovieMeta = (meta: CachedMovieMeta) => {
+  if (typeof window === "undefined") return;
+  try {
+    const stored = localStorage.getItem(MOVIE_META_KEY);
+    const cache: Record<string, CachedMovieMeta> = stored ? JSON.parse(stored) : {};
+    cache[meta.imdbId] = meta;
+    localStorage.setItem(MOVIE_META_KEY, JSON.stringify(cache));
+  } catch (error) {
+    console.error("Failed to save movie meta:", error);
+  }
+};
+
+export const getAllMovieMeta = (): Record<string, CachedMovieMeta> => {
+  if (typeof window === "undefined") return {};
+  try {
+    const stored = localStorage.getItem(MOVIE_META_KEY);
+    return stored ? JSON.parse(stored) : {};
+  } catch (error) {
+    return {};
+  }
+};

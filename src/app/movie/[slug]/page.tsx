@@ -148,6 +148,11 @@ export default async function PublicMoviePage({ params, searchParams }: { params
                   autoPlay={autoPlay}
                   currentSeason={currentSeason}
                   currentEpisode={currentEpisode}
+                  movieMeta={{
+                    slug: movie.slug,
+                    backdropUrl: movie.backdropUrl ?? null,
+                    posterUrl: movie.posterUrl ?? null,
+                  }}
                 />
                 {movie.trailerKey && (
                   <TrailerButton

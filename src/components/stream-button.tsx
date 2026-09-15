@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { Play } from "lucide-react";
 import dynamic from "next/dynamic";
+import { saveMovieMeta } from "@/lib/progress";
 
 const DashPlayer = dynamic(() => import("./dash-player"), {
   ssr: false,
@@ -24,15 +25,31 @@ interface StreamButtonProps {
   currentEpisode?: number;
   episodeStreams?: { id: number; seasonNumber: number; episodeNumber: number; streamUrl: string }[];
   autoPlay?: boolean;
+  movieMeta?: {
+    slug: string;
+    backdropUrl: string | null;
+    posterUrl: string | null;
+  };
 }
 
-export function StreamButton({ streamUrl, title, seasons, tmdbId, contentType, currentSeason, currentEpisode, episodeStreams = [], autoPlay = false }: StreamButtonProps) {
+export function StreamButton({ streamUrl, title, seasons, tmdbId, contentType, currentSeason, currentEpisode, episodeStreams = [], autoPlay = false, movieMeta }: StreamButtonProps) {
   const [isOpen, setIsOpen] = useState(autoPlay);
   const [wasOpenedByClick, setWasOpenedByClick] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
+    // Cache movie metadata in localStorage so Continue Watching loads instantly
+    if (tmdbId && movieMeta) {
+      saveMovieMeta({
+        imdbId: tmdbId,
+        title,
+        slug: movieMeta.slug,
+        backdropUrl: movieMeta.backdropUrl,
+        posterUrl: movieMeta.posterUrl,
+        contentType: contentType || "movie",
+      });
+    }
   }, []);
 
   // Lock body scroll and handle screen orientation when modal is open
