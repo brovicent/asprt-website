@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import dashjs from "dashjs";
 import { Play, Pause, Volume1, VolumeX, Maximize, Minimize, Settings, Subtitles, ArrowLeft, LayoutList, Lock, Unlock, Sun } from "lucide-react";
 import { saveProgress, getProgress } from "@/lib/progress";
+import { getTMDBSeason } from "@/lib/actions";
 
 interface CustomCue {
   start: number;
