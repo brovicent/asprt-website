@@ -177,7 +177,8 @@ export function SeriesEpisodes({ tmdbId, seasons, streamUrl, title, episodeStrea
           currentEpisode={playingEpisode}
           onEpisodeChange={handlePlayEpisode}
           episodeStreams={episodeStreams}
-          fallbackStreamUrl={streamUrl}
+          fallbackStreamUrl={streamUrl || undefined}
+          shouldAutoPlay={true}
         />
       </div>
     </div>,

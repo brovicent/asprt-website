@@ -46,6 +46,7 @@ interface DashPlayerProps {
   onEpisodeChange?: (season: number, episode: number) => void;
   episodeStreams?: EpisodeStream[];
   fallbackStreamUrl?: string;
+  shouldAutoPlay?: boolean;
 }
 
 // Helper to determine the quality label based on width/height
@@ -70,6 +71,7 @@ export default function DashPlayer({
   onEpisodeChange,
   episodeStreams = [],
   fallbackStreamUrl,
+  shouldAutoPlay = false,
 }: DashPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -144,6 +146,8 @@ export default function DashPlayer({
   const [selectedEp, setSelectedEp] = useState<{ season: number; episode: number } | null>(
     currentSeason && currentEpisode ? { season: currentSeason, episode: currentEpisode } : null
   );
+
+  const isFirstLoad = useRef(true);
 
   // Hide scrollbar whenever the player is mounted (even on autoplay/reload)
   useEffect(() => {
@@ -471,8 +475,11 @@ export default function DashPlayer({
 
       if (!isMounted || !videoRef.current) return;
 
+      const autoPlayThisTime = isFirstLoad.current ? shouldAutoPlay : true;
+      isFirstLoad.current = false;
+
       playerRef.current = dashjs.MediaPlayer().create();
-      playerRef.current.initialize(videoRef.current, playerUrl, false);
+      playerRef.current.initialize(videoRef.current, playerUrl, autoPlayThisTime);
       
       playerRef.current.updateSettings({
         streaming: {

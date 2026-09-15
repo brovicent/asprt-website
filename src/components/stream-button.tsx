@@ -28,6 +28,7 @@ interface StreamButtonProps {
 
 export function StreamButton({ streamUrl, title, seasons, tmdbId, contentType, currentSeason, currentEpisode, episodeStreams = [], autoPlay = false }: StreamButtonProps) {
   const [isOpen, setIsOpen] = useState(autoPlay);
+  const [wasOpenedByClick, setWasOpenedByClick] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -113,6 +114,7 @@ export function StreamButton({ streamUrl, title, seasons, tmdbId, contentType, c
           onEpisodeChange={handleEpisodeChange}
           episodeStreams={episodeStreams}
           fallbackStreamUrl={streamUrl || undefined}
+          shouldAutoPlay={wasOpenedByClick}
         />
       </div>
     </div>
@@ -122,6 +124,7 @@ export function StreamButton({ streamUrl, title, seasons, tmdbId, contentType, c
     <>
       <button
         onClick={() => {
+          setWasOpenedByClick(true);
           setIsOpen(true);
           try {
             if (screen.orientation && (screen.orientation as any).lock) {
