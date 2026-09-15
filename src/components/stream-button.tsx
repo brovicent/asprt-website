@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { Play } from "lucide-react";
 import dynamic from "next/dynamic";
-import { saveMovieMeta } from "@/lib/progress";
+import { saveMovieMeta, getAllProgress } from "@/lib/progress";
 
 const DashPlayer = dynamic(() => import("./dash-player"), {
   ssr: false,
@@ -36,6 +36,7 @@ export function StreamButton({ streamUrl, title, seasons, tmdbId, contentType, c
   const [isOpen, setIsOpen] = useState(autoPlay);
   const [wasOpenedByClick, setWasOpenedByClick] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [resumeLabel, setResumeLabel] = useState<string | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -49,6 +50,31 @@ export function StreamButton({ streamUrl, title, seasons, tmdbId, contentType, c
         posterUrl: movieMeta.posterUrl,
         contentType: contentType || "movie",
       });
+    }
+    // Check for existing progress to show Resume label
+    if (tmdbId) {
+      const allProgress = getAllProgress();
+      const prefix = `${tmdbId}|`;
+      let latestEntry: { key: string; updatedAt: number } | null = null;
+      for (const key in allProgress) {
+        if (key.startsWith(prefix)) {
+          const p = allProgress[key];
+          if (p.duration > 0 && p.currentTime > 5 && p.currentTime / p.duration < 0.95) {
+            if (!latestEntry || p.updatedAt > latestEntry.updatedAt) {
+              latestEntry = { key, updatedAt: p.updatedAt };
+            }
+          }
+        }
+      }
+      if (latestEntry) {
+        const parts = latestEntry.key.split("|");
+        const isTv = parts[1] === "tv";
+        if (isTv && parts.length >= 4) {
+          setResumeLabel(`Resume S${parts[2]}:E${parts[3]}`);
+        } else {
+          setResumeLabel("Resume");
+        }
+      }
     }
   }, []);
 
@@ -151,8 +177,8 @@ export function StreamButton({ streamUrl, title, seasons, tmdbId, contentType, c
         }}
         className="flex items-center gap-2 px-6 py-2.5 sm:px-8 sm:py-3 bg-white hover:bg-white/90 text-black rounded-full font-bold text-sm sm:text-base transition-colors shadow-lg cursor-pointer"
       >
-        <Play size={20} fill="currentColor" />
-        Play
+        <Play size={18} fill="currentColor" />
+        {resumeLabel ?? "Play"}
       </button>
 
       {mounted && modalContent ? createPortal(modalContent, document.body) : null}
