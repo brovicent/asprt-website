@@ -1175,7 +1175,7 @@ export default function DashPlayer({
                 ) : (
                   <div
                     ref={episodeScrollRef}
-                    className="flex gap-4 overflow-x-auto py-3 pl-1"
+                    className="flex gap-4 overflow-x-auto overflow-y-visible py-6 pl-1"
                     style={{ scrollbarWidth: "none", msOverflowStyle: "none", cursor: epIsDragging.current ? "grabbing" : "grab" }}
                     onClick={e => e.stopPropagation()}
                     onMouseDown={e => {
@@ -1205,10 +1205,10 @@ export default function DashPlayer({
                       return (
                         <div
                           key={ep.id}
-                          className={`flex-shrink-0 cursor-pointer select-none transition-all duration-300 ease-out ${
+                          className={`flex-shrink-0 cursor-pointer select-none transition-all duration-500 ease-out hover:scale-[1.08] hover:z-10 hover:opacity-100 ${
                             isHighlighted
-                              ? "w-[82vw] sm:w-[340px] opacity-100"
-                              : "w-[68vw] sm:w-[248px] opacity-60 hover:opacity-90 group"
+                              ? "w-[82vw] sm:w-[340px] opacity-100 scale-100 z-10"
+                              : "w-[68vw] sm:w-[248px] opacity-60 group"
                           }`}
                           onClick={e => {
                             e.stopPropagation();
