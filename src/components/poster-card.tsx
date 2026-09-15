@@ -1,14 +1,17 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Star, Film } from "lucide-react";
 import { optimizeImageUrl } from "@/lib/utils";
+import { getAllProgress } from "@/lib/progress";
 
 export interface PosterData {
   id: number;
   title: string;
   slug: string;
   posterUrl: string | null;
+  imdbId: string | null;
   year: number | null;
   rating: string | null;
   contentType: string;
@@ -20,6 +23,27 @@ export interface PosterData {
 }
 
 export function PosterCard({ movie }: { movie: PosterData }) {
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    if (movie.imdbId) {
+      const allProgress = getAllProgress();
+      const prefix = `${movie.imdbId}_${movie.contentType}`;
+      
+      let highestProgress = 0;
+      for (const key in allProgress) {
+        if (key.startsWith(prefix)) {
+          const p = allProgress[key];
+          if (p.duration > 0) {
+            const pct = (p.currentTime / p.duration) * 100;
+            if (pct > highestProgress) highestProgress = pct;
+          }
+        }
+      }
+      setProgress(highestProgress);
+    }
+  }, [movie.imdbId, movie.contentType]);
+
   return (
     <Link href={`/movie/${movie.slug}`} className="block w-full group/card relative" draggable={false}>
       <div className="relative aspect-[2/3] rounded-md overflow-hidden bg-surface-elevated/50 transition-all duration-300 ease-out transform group-hover/card:scale-105 group-hover/card:z-50 group-hover/card:shadow-[0_0_20px_rgba(0,0,0,0.8)] group-hover/card:ring-2 group-hover/card:ring-white">
@@ -39,6 +63,16 @@ export function PosterCard({ movie }: { movie: PosterData }) {
         
         {/* Simple gradient overlay on hover */}
         <div className="absolute inset-0 bg-black/0 group-hover/card:bg-black/10 transition-colors duration-300 pointer-events-none" />
+        
+        {/* Progress Bar */}
+        {progress > 0 && progress < 98 && (
+          <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20 z-10">
+            <div 
+              className="h-full bg-primary" 
+              style={{ width: `${Math.min(progress, 100)}%` }}
+            />
+          </div>
+        )}
       </div>
 
       <div className="mt-2 px-1">

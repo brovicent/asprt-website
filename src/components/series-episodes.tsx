@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { getTMDBSeason } from "@/lib/actions";
+import { getProgress } from "@/lib/progress";
 import { ChevronDown, Play } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useRouter, usePathname } from "next/navigation";
@@ -233,7 +234,13 @@ export function SeriesEpisodes({ tmdbId, seasons, streamUrl, title, episodeStrea
           className={`flex overflow-x-auto gap-4 sm:gap-6 pb-6 scrollbar-hide ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
-          {episodes.map(ep => (
+          {episodes.map(ep => {
+            const progress = getProgress(tmdbId, "tv", selectedSeason, ep.episode_number);
+            const progressPct = progress && progress.duration > 0 
+              ? (progress.currentTime / progress.duration) * 100 
+              : 0;
+
+            return (
             <div 
               key={ep.id} 
               className="flex flex-col flex-shrink-0 w-64 sm:w-80 group select-none cursor-pointer"
@@ -276,13 +283,23 @@ export function SeriesEpisodes({ tmdbId, seasons, streamUrl, title, episodeStrea
                     <Play size={20} fill="white" className="text-white ml-0.5" />
                   </div>
                 </div>
+
+                {/* Progress Bar */}
+                {progressPct > 0 && progressPct < 98 && (
+                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20 z-10">
+                    <div 
+                      className="h-full bg-primary" 
+                      style={{ width: `${Math.min(progressPct, 100)}%` }}
+                    />
+                  </div>
+                )}
               </div>
               <h4 className="text-sm font-bold text-white leading-tight mb-1 group-hover:text-white/80 transition-colors">{ep.name}</h4>
               <p className="text-[12px] text-white/50 leading-relaxed line-clamp-3">
                 {ep.overview || "No description available."}
               </p>
             </div>
-          ))}
+          )})}
         </div>
       ) : (
         <div className="text-sm text-white/50 py-8">

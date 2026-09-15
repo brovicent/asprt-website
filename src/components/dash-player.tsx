@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import dashjs from "dashjs";
 import { Play, Pause, Volume1, VolumeX, Maximize, Minimize, Settings, Subtitles, ArrowLeft, LayoutList, Lock, Unlock, Sun } from "lucide-react";
-import { getTMDBSeason } from "@/lib/actions";
+import { saveProgress, getProgress } from "@/lib/progress";
 
 interface CustomCue {
   start: number;
@@ -148,6 +148,8 @@ export default function DashPlayer({
   );
 
   const isFirstLoad = useRef(true);
+  const hasSeekedRef = useRef(false);
+  const lastSavedTimeRef = useRef(0);
 
   // Hide scrollbar whenever the player is mounted (even on autoplay/reload)
   useEffect(() => {
@@ -559,6 +561,19 @@ export default function DashPlayer({
       setCurrentTime(video.currentTime);
       setProgress((video.currentTime / (video.duration || 1)) * 100);
 
+      // Save progress every 5 seconds
+      if (Math.abs(video.currentTime - lastSavedTimeRef.current) >= 5) {
+        saveProgress(
+          tmdbId || "unknown",
+          contentType || "movie",
+          video.currentTime,
+          video.duration,
+          currentSeason,
+          currentEpisode
+        );
+        lastSavedTimeRef.current = video.currentTime;
+      }
+
       // Extract subtitles and force native tracks to be hidden
       if (useCustomSubtitle && customCues.length > 0) {
         const time = video.currentTime - subtitleDelay;
@@ -607,7 +622,22 @@ export default function DashPlayer({
     const video = videoRef.current;
     if (!video) return;
 
-    const handleDuration = () => setDuration(video.duration);
+    const handleDuration = () => {
+      setDuration(video.duration);
+      
+      // Seek to saved progress on initial load
+      if (!hasSeekedRef.current && tmdbId) {
+        const saved = getProgress(tmdbId, contentType || "movie", currentSeason, currentEpisode);
+        if (saved && saved.currentTime > 0 && video.duration > 0) {
+          // If not near the end, seek to saved time
+          if (saved.currentTime < video.duration - 10) {
+            video.currentTime = saved.currentTime;
+          }
+        }
+        hasSeekedRef.current = true;
+      }
+    };
+    
     const handlePlay = () => setIsPlaying(true);
     const handlePause = () => setIsPlaying(false);
     
