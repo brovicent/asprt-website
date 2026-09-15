@@ -1,26 +1,44 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
-import { Play, Plus, Info, Star } from "lucide-react";
+import { Play, ChevronLeft, ChevronRight, Star } from "lucide-react";
 import { optimizeImageUrl } from "@/lib/utils";
 
 export function HeroBanner({ movies, logos = [] }: { movies: any[], logos?: (string | null)[] }) {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  const startAutoPlay = useCallback(() => {
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    intervalRef.current = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % movies.length);
+    }, 6000);
+  }, [movies.length]);
 
   useEffect(() => {
     if (!movies || movies.length === 0) return;
-    const interval = setInterval(() => {
-      setCurrentIndex((prevIndex) => (prevIndex + 1) % movies.length);
-    }, 6000); // 6 seconds per slide
-    return () => clearInterval(interval);
-  }, [movies]);
+    if (!isPaused) startAutoPlay();
+    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
+  }, [movies, isPaused, startAutoPlay]);
 
   if (!movies || movies.length === 0) return null;
 
   const movie = movies[currentIndex];
-  const logoUrl = logos[currentIndex];
-  const goToSlide = (index: number) => setCurrentIndex(index);
+
+  const goToSlide = (index: number) => {
+    setCurrentIndex(index);
+    setIsPaused(true);
+    // Resume auto-play after 8 seconds of inactivity
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    intervalRef.current = setTimeout(() => {
+      setIsPaused(false);
+    }, 8000) as unknown as NodeJS.Timeout;
+  };
+
+  const goPrev = () => goToSlide((currentIndex - 1 + movies.length) % movies.length);
+  const goNext = () => goToSlide((currentIndex + 1) % movies.length);
 
   return (
     <div className="relative w-full h-[60vh] sm:h-[75vh] md:h-[90vh] min-h-[450px] flex items-end pb-24 sm:pb-36 group overflow-hidden">
@@ -41,11 +59,29 @@ export function HeroBanner({ movies, logos = [] }: { movies: any[], logos?: (str
           ) : (
             <div className="w-full h-full bg-surface-elevated" />
           )}
-          {/* Gradients to fade into background */}
+          {/* Gradients */}
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
           <div className="absolute inset-0 bg-gradient-to-r from-background/90 via-background/40 to-transparent" />
         </div>
       ))}
+
+      {/* Prev Arrow */}
+      <button
+        onClick={goPrev}
+        aria-label="Previous"
+        className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 z-30 bg-black/40 hover:bg-black/70 backdrop-blur-md text-white p-2 sm:p-3 rounded-full transition-all duration-200 opacity-0 group-hover:opacity-100 hover:scale-110 shadow-lg"
+      >
+        <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
+      </button>
+
+      {/* Next Arrow */}
+      <button
+        onClick={goNext}
+        aria-label="Next"
+        className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 z-30 bg-black/40 hover:bg-black/70 backdrop-blur-md text-white p-2 sm:p-3 rounded-full transition-all duration-200 opacity-0 group-hover:opacity-100 hover:scale-110 shadow-lg"
+      >
+        <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
+      </button>
 
       {/* Content */}
       <div className="relative z-10 w-full px-4 lg:px-12 xl:px-16 h-full flex items-end">
@@ -97,7 +133,7 @@ export function HeroBanner({ movies, logos = [] }: { movies: any[], logos?: (str
             );
           })}
 
-          {/* Stationary Buttons - Not affected by crossfade animation */}
+          {/* Stationary Buttons */}
           <div className="absolute bottom-0 left-0 w-full flex items-center gap-3 pointer-events-auto z-20">
             <Link
               href={`/movie/${movie.slug}`}
@@ -110,7 +146,7 @@ export function HeroBanner({ movies, logos = [] }: { movies: any[], logos?: (str
         </div>
       </div>
 
-      {/* Pagination Indicators */}
+      {/* Pagination Dots */}
       <div className="absolute bottom-16 sm:bottom-28 left-0 right-0 z-20 flex items-center justify-center gap-2">
         <style>{`
           @keyframes slideProgress {
@@ -129,9 +165,9 @@ export function HeroBanner({ movies, logos = [] }: { movies: any[], logos?: (str
             >
               {isActive && (
                 <div 
-                  key={`progress-${currentIndex}`} 
+                  key={`progress-${currentIndex}-${isPaused ? 'paused' : 'playing'}`} 
                   className="absolute top-0 left-0 h-full bg-white rounded-full"
-                  style={{ animation: 'slideProgress 6s linear forwards' }}
+                  style={{ animation: isPaused ? 'none' : 'slideProgress 6s linear forwards', width: isPaused ? '100%' : undefined }}
                 />
               )}
             </button>
