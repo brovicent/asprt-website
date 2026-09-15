@@ -1096,10 +1096,10 @@ export default function DashPlayer({
       >
         <button 
           onClick={onClose}
-          className="text-white hover:scale-110 hover:text-white/70 transition-all pointer-events-auto"
+          className="bg-black/40 hover:bg-black/60 backdrop-blur-md p-2 sm:p-3 rounded-full text-white hover:text-[#E50914] transition-all pointer-events-auto"
           title="Back"
         >
-          <ArrowLeft className="w-6 h-6 sm:w-8 sm:h-8" />
+          <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6" />
         </button>
         {/* Mobile Title (hidden on md and above where the bottom title is shown) */}
         <div className="md:hidden flex flex-col pointer-events-none truncate">
